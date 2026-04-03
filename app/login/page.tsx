@@ -13,13 +13,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const res = await fetch("/api/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,23 +31,34 @@ export default function LoginPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!res.ok || !data.success) {
-        setError(data.message || "Login failed");
+      if (!data.success) {
+        setError(data.message || "Login failed.");
         setLoading(false);
         return;
       }
 
-      if (data.role === "company") {
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+        })
+      );
+
+      if (data.user.role === "company") {
         router.push("/company-home");
-      } else if (data.role === "designer") {
+      } else if (data.user.role === "designer") {
         router.push("/designer-dashboard");
       } else {
         router.push("/client-dashboard");
       }
-    } catch {
+    } catch (err) {
       setError("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   };

@@ -694,7 +694,13 @@ export default function CompanyDashboardPage() {
   return (
     <div className={styles.page}>
       <aside className={styles.sidebar}>
-        <h2 className={styles.logo}>NAKSHET ADS</h2>
+        <div className={styles.brand}>
+          <div className={styles.brandLogo}>N</div>
+          <div>
+            <h2>NAKSHET</h2>
+            <p>Company Workspace</p>
+          </div>
+        </div>
 
         <button onClick={() => setActiveSection("dashboard")}>Dashboard</button>
         <button onClick={() => setActiveSection("clients")}>Clients</button>

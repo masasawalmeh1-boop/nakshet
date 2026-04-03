@@ -8,18 +8,21 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  name         String
-  email        String         @unique
-  passwordHash String
-  role         String
-  createdAt    DateTime       @default(now())
+  id               Int                  @id @default(autoincrement())
+  name             String
+  email            String               @unique
+  passwordHash     String
+  role             String
+  createdAt        DateTime             @default(now())
 
-  clientProfile ClientProfile?
-  projects      Project[]
-  designs       Design[]      @relation("DesignerDesigns")
-  sentMessages  Message[]     @relation("SentMessages")
-  receivedMessages Message[]  @relation("ReceivedMessages")
+  clientProfile    ClientProfile?
+  projects         Project[]
+  designs          Design[]             @relation("DesignerDesigns")
+  sentMessages     Message[]            @relation("SentMessages")
+  receivedMessages Message[]            @relation("ReceivedMessages")
+
+  memberships      ConversationMember[]
+  uploads          Upload[]
 }
 
 model ClientProfile {
@@ -50,11 +53,13 @@ model Project {
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  designs   Design[]
-  videos    Video[]
-  files     FileAsset[]
-  contents  ContentCalendar[]
-  reports   Report[]
+  designs       Design[]
+  videos        Video[]
+  files         FileAsset[]
+  contents      ContentCalendar[]
+  reports       Report[]
+  uploads       Upload[]
+  conversations Conversation[]
 }
 
 model Design {
@@ -134,14 +139,58 @@ model Report {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
+model Conversation {
+  id        Int                  @id @default(autoincrement())
+  title     String
+  projectId Int?
+  createdAt DateTime             @default(now())
+
+  project   Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  members   ConversationMember[]
+  messages  Message[]
+}
+
+model ConversationMember {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  userId         Int
+  joinedAt       DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
 model Message {
-  id         Int      @id @default(autoincrement())
-  text       String
-  createdAt  DateTime @default(now())
+  id             Int           @id @default(autoincrement())
+  text           String
+  createdAt      DateTime      @default(now())
 
-  senderId Int
-  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId       Int
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
-  receiverId Int
-  receiver   User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId     Int?
+  receiver       User?         @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  conversationId Int?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Upload {
+  id         Int       @id @default(autoincrement())
+  title      String
+  fileName   String
+  fileUrl    String
+  fileType   String
+  category   String
+  status     String
+  note       String?
+  createdAt  DateTime  @default(now())
+
+  uploaderId Int
+  uploader   User      @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  projectId  Int?
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
