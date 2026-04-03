@@ -1,6 +1,71 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./login.module.css";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (!email || !password) {
+      setErrorMessage("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setErrorMessage(data.message || "Login failed.");
+        return;
+      }
+
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+        })
+      );
+
+      setSuccessMessage("Login successful. Redirecting...");
+
+      setTimeout(() => {
+        if (data.user.role === "company") {
+          router.push("/company-home");
+        } else if (data.user.role === "designer") {
+          router.push("/designer-dashboard");
+        } else {
+          router.push("/client-dashboard");
+        }
+      }, 1000);
+    } catch (error) {
+      setErrorMessage("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.loginBox}>
@@ -16,12 +81,30 @@ export default function LoginPage() {
           <h2>Login</h2>
           <p className={styles.subtitle}>Sign in to your account</p>
 
-          <form className={styles.form}>
+          <form className={styles.form} onSubmit={handleLogin}>
             <label>Email</label>
-            <input type="email" placeholder="Enter your email" />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <label>Password</label>
-            <input type="password" placeholder="Enter your password" />
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {errorMessage && (
+              <p className={styles.errorMessage}>{errorMessage}</p>
+            )}
+
+            {successMessage && (
+              <p className={styles.successMessage}>{successMessage}</p>
+            )}
 
             <div className={styles.options}>
               <label className={styles.remember}>
