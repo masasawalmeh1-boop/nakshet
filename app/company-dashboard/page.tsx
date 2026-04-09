@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import styles from "./designer-dashboard.module.css";
+import styles from "./company-dashboard.module.css";
 import {
   Bell,
   Briefcase,

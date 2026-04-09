@@ -36,9 +36,12 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({
       success: true,
-      role: user.role,
-      name: user.name,
-      email: user.email,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
 
     response.cookies.set("auth_user", user.email, {
@@ -59,6 +62,8 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
     return NextResponse.json(
       { success: false, message: "Server error." },
       { status: 500 }

@@ -54,7 +54,7 @@ export default function LoginPage() {
 
       setTimeout(() => {
         if (data.user.role === "company") {
-          router.push("/company-home");
+          router.push("/company-dashboard");
         } else if (data.user.role === "designer") {
           router.push("/designer-dashboard");
         } else {
@@ -81,14 +81,6 @@ export default function LoginPage() {
           <h2>Login</h2>
           <p className={styles.subtitle}>Sign in to your account</p>
 
-<<<<<<< HEAD
-          <form className={styles.form}>
-            <label>Email</label>
-            <input type="email" placeholder="Enter your email" />
-
-            <label>Password</label>
-            <input type="password" placeholder="Enter your password" />
-=======
           <form className={styles.form} onSubmit={handleLogin}>
             <label>Email</label>
             <input
@@ -113,7 +105,6 @@ export default function LoginPage() {
             {successMessage && (
               <p className={styles.successMessage}>{successMessage}</p>
             )}
->>>>>>> teammate-branch
 
             <div className={styles.options}>
               <label className={styles.remember}>
@@ -129,7 +120,7 @@ export default function LoginPage() {
           </form>
 
           <p className={styles.footerText}>
-            Don&apos;t have an account? <a href="#">Contact Admin</a>
+            Don&apos;t have an account? <a href="/register">Create Account</a>
           </p>
         </div>
       </div>

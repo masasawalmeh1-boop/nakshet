@@ -130,7 +130,6 @@
   font-size: 23px;
 }
 
-<<<<<<< HEAD
 .sectionHead {
   display: flex;
   align-items: center;
@@ -148,8 +147,6 @@
   font-weight: 700;
 }
 
-=======
->>>>>>> teammate-branch
 .row {
   display: flex;
   justify-content: space-between;
@@ -237,14 +234,6 @@
   white-space: nowrap;
 }
 
-<<<<<<< HEAD
-=======
-.lockedItem {
-  opacity: 0.5;
-  cursor: not-allowed !important;
-}
-
->>>>>>> teammate-branch
 .emptyInfoBox {
   background: white;
   border-radius: 20px;
@@ -267,7 +256,6 @@
   font-size: 15px;
 }
 
-<<<<<<< HEAD
 .emptyMiniBox {
   padding-top: 10px;
 }
@@ -278,8 +266,6 @@
   line-height: 1.8;
 }
 
-=======
->>>>>>> teammate-branch
 .addInfoBtn {
   background: linear-gradient(90deg, #1f2a44 0%, #2a52db 100%);
   color: white;
@@ -290,7 +276,6 @@
   font-weight: 700;
 }
 
-<<<<<<< HEAD
 .designsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -423,19 +408,6 @@
 
   .contentGrid,
   .designsGrid {
-=======
-@media (max-width: 1100px) {
-  .designsGrid,
-  .videosGrid,
-  .adsGrid,
-  .reportsGrid,
-  .filesGrid,
-  .summaryGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .contentGrid {
->>>>>>> teammate-branch
     grid-template-columns: 1fr;
   }
 }
@@ -458,25 +430,7 @@
     flex-wrap: wrap;
   }
 
-<<<<<<< HEAD
   .infoGrid {
     grid-template-columns: 1fr;
   }
-=======
-  .chatSection {
-    grid-template-columns: 1fr;
-  }
-
-  .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .calendarRow {
-    grid-template-columns: 1fr;
-  }
-
-  .calendarRight {
-    align-items: flex-start;
-  }
->>>>>>> teammate-branch
 }
