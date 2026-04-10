@@ -5,12 +5,7 @@ import { cookies } from "next/headers";
 async function authorizeCompany() {
   const cookieStore = await cookies();
   const authRole = cookieStore.get("auth_role")?.value;
-
-  if (authRole !== "company") {
-    return false;
-  }
-
-  return true;
+  return authRole === "company";
 }
 
 export async function GET() {
@@ -24,7 +19,7 @@ export async function GET() {
       );
     }
 
-    const designs = await prisma.design.findMany({
+    const contents = await prisma.contentCalendar.findMany({
       include: {
         project: {
           include: {
@@ -35,8 +30,6 @@ export async function GET() {
             },
           },
         },
-        approvals: true,
-        designer: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -52,19 +45,13 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    const designers = await prisma.user.findMany({
-      where: { role: "designer" },
-      orderBy: { createdAt: "desc" },
-    });
-
     return NextResponse.json({
       success: true,
-      designs,
+      contents,
       projects,
-      designers,
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS GET ERROR:", error);
+    console.error("COMPANY CONTENTS GET ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -84,18 +71,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const {
-      name,
-      type,
-      deliveryDate,
-      status,
-      projectId,
-      designerId,
-      designerNotes,
-      clientComments,
-    } = body;
+    const { title, platform, date, status, projectId } = body;
 
-    if (!name || !type || !deliveryDate || !status || !projectId) {
+    if (!title || !platform || !date || !status || !projectId) {
       return NextResponse.json(
         { success: false, message: "Required fields are missing." },
         { status: 400 }
@@ -113,32 +91,13 @@ export async function POST(request: Request) {
       );
     }
 
-    if (designerId) {
-      const existingDesigner = await prisma.user.findFirst({
-        where: {
-          id: Number(designerId),
-          role: "designer",
-        },
-      });
-
-      if (!existingDesigner) {
-        return NextResponse.json(
-          { success: false, message: "Designer not found." },
-          { status: 404 }
-        );
-      }
-    }
-
-    const design = await prisma.design.create({
+    const content = await prisma.contentCalendar.create({
       data: {
-        name,
-        type,
-        deliveryDate,
+        title,
+        platform,
+        date,
         status,
         projectId: Number(projectId),
-        designerId: designerId ? Number(designerId) : null,
-        designerNotes: designerNotes || "",
-        clientComments: clientComments || "",
       },
       include: {
         project: {
@@ -150,18 +109,16 @@ export async function POST(request: Request) {
             },
           },
         },
-        approvals: true,
-        designer: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Design created successfully.",
-      design,
+      message: "Content item created successfully.",
+      content,
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS POST ERROR:", error);
+    console.error("COMPANY CONTENTS POST ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -181,34 +138,22 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const {
-      designId,
-      name,
-      type,
-      deliveryDate,
-      status,
-      projectId,
-      designerId,
-      designerNotes,
-      clientComments,
-      approvalNotes,
-    } = body;
+    const { contentId, title, platform, date, status, projectId } = body;
 
-    if (!designId) {
+    if (!contentId) {
       return NextResponse.json(
-        { success: false, message: "Design ID is required." },
+        { success: false, message: "Content ID is required." },
         { status: 400 }
       );
     }
 
-    const existingDesign = await prisma.design.findUnique({
-      where: { id: Number(designId) },
-      include: { approvals: true },
+    const existingContent = await prisma.contentCalendar.findUnique({
+      where: { id: Number(contentId) },
     });
 
-    if (!existingDesign) {
+    if (!existingContent) {
       return NextResponse.json(
-        { success: false, message: "Design not found." },
+        { success: false, message: "Content item not found." },
         { status: 404 }
       );
     }
@@ -226,40 +171,14 @@ export async function PATCH(request: Request) {
       }
     }
 
-    if (designerId !== undefined && designerId !== null && designerId !== "") {
-      const existingDesigner = await prisma.user.findFirst({
-        where: {
-          id: Number(designerId),
-          role: "designer",
-        },
-      });
-
-      if (!existingDesigner) {
-        return NextResponse.json(
-          { success: false, message: "Designer not found." },
-          { status: 404 }
-        );
-      }
-    }
-
-    const updatedDesign = await prisma.design.update({
-      where: { id: Number(designId) },
+    const content = await prisma.contentCalendar.update({
+      where: { id: Number(contentId) },
       data: {
-        ...(name !== undefined ? { name } : {}),
-        ...(type !== undefined ? { type } : {}),
-        ...(deliveryDate !== undefined ? { deliveryDate } : {}),
+        ...(title !== undefined ? { title } : {}),
+        ...(platform !== undefined ? { platform } : {}),
+        ...(date !== undefined ? { date } : {}),
         ...(status !== undefined ? { status } : {}),
         ...(projectId !== undefined ? { projectId: Number(projectId) } : {}),
-        ...(designerId !== undefined
-          ? {
-              designerId:
-                designerId === null || designerId === ""
-                  ? null
-                  : Number(designerId),
-            }
-          : {}),
-        ...(designerNotes !== undefined ? { designerNotes } : {}),
-        ...(clientComments !== undefined ? { clientComments } : {}),
       },
       include: {
         project: {
@@ -271,28 +190,16 @@ export async function PATCH(request: Request) {
             },
           },
         },
-        approvals: true,
-        designer: true,
       },
     });
 
-    if (status === "Approved" || status === "Rejected") {
-      await prisma.approval.create({
-        data: {
-          designId: Number(designId),
-          status,
-          notes: approvalNotes || null,
-        },
-      });
-    }
-
     return NextResponse.json({
       success: true,
-      message: "Design updated successfully.",
-      design: updatedDesign,
+      message: "Content item updated successfully.",
+      content,
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS PATCH ERROR:", error);
+    console.error("COMPANY CONTENTS PATCH ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -312,36 +219,36 @@ export async function DELETE(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const designId = searchParams.get("designId");
+    const contentId = searchParams.get("contentId");
 
-    if (!designId) {
+    if (!contentId) {
       return NextResponse.json(
-        { success: false, message: "Design ID is required." },
+        { success: false, message: "Content ID is required." },
         { status: 400 }
       );
     }
 
-    const existingDesign = await prisma.design.findUnique({
-      where: { id: Number(designId) },
+    const existingContent = await prisma.contentCalendar.findUnique({
+      where: { id: Number(contentId) },
     });
 
-    if (!existingDesign) {
+    if (!existingContent) {
       return NextResponse.json(
-        { success: false, message: "Design not found." },
+        { success: false, message: "Content item not found." },
         { status: 404 }
       );
     }
 
-    await prisma.design.delete({
-      where: { id: Number(designId) },
+    await prisma.contentCalendar.delete({
+      where: { id: Number(contentId) },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Design deleted successfully.",
+      message: "Content item deleted successfully.",
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS DELETE ERROR:", error);
+    console.error("COMPANY CONTENTS DELETE ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

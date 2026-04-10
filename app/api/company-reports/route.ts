@@ -5,12 +5,7 @@ import { cookies } from "next/headers";
 async function authorizeCompany() {
   const cookieStore = await cookies();
   const authRole = cookieStore.get("auth_role")?.value;
-
-  if (authRole !== "company") {
-    return false;
-  }
-
-  return true;
+  return authRole === "company";
 }
 
 export async function GET() {
@@ -24,7 +19,7 @@ export async function GET() {
       );
     }
 
-    const designs = await prisma.design.findMany({
+    const reports = await prisma.report.findMany({
       include: {
         project: {
           include: {
@@ -35,8 +30,6 @@ export async function GET() {
             },
           },
         },
-        approvals: true,
-        designer: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -52,19 +45,13 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    const designers = await prisma.user.findMany({
-      where: { role: "designer" },
-      orderBy: { createdAt: "desc" },
-    });
-
     return NextResponse.json({
       success: true,
-      designs,
+      reports,
       projects,
-      designers,
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS GET ERROR:", error);
+    console.error("COMPANY REPORTS GET ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -84,18 +71,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const {
-      name,
-      type,
-      deliveryDate,
-      status,
-      projectId,
-      designerId,
-      designerNotes,
-      clientComments,
-    } = body;
+    const { month, followers, engagement, bestPost, projectId } = body;
 
-    if (!name || !type || !deliveryDate || !status || !projectId) {
+    if (!month || !followers || !engagement || !bestPost || !projectId) {
       return NextResponse.json(
         { success: false, message: "Required fields are missing." },
         { status: 400 }
@@ -113,32 +91,13 @@ export async function POST(request: Request) {
       );
     }
 
-    if (designerId) {
-      const existingDesigner = await prisma.user.findFirst({
-        where: {
-          id: Number(designerId),
-          role: "designer",
-        },
-      });
-
-      if (!existingDesigner) {
-        return NextResponse.json(
-          { success: false, message: "Designer not found." },
-          { status: 404 }
-        );
-      }
-    }
-
-    const design = await prisma.design.create({
+    const report = await prisma.report.create({
       data: {
-        name,
-        type,
-        deliveryDate,
-        status,
+        month,
+        followers,
+        engagement,
+        bestPost,
         projectId: Number(projectId),
-        designerId: designerId ? Number(designerId) : null,
-        designerNotes: designerNotes || "",
-        clientComments: clientComments || "",
       },
       include: {
         project: {
@@ -150,18 +109,16 @@ export async function POST(request: Request) {
             },
           },
         },
-        approvals: true,
-        designer: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Design created successfully.",
-      design,
+      message: "Report created successfully.",
+      report,
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS POST ERROR:", error);
+    console.error("COMPANY REPORTS POST ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -181,34 +138,22 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const {
-      designId,
-      name,
-      type,
-      deliveryDate,
-      status,
-      projectId,
-      designerId,
-      designerNotes,
-      clientComments,
-      approvalNotes,
-    } = body;
+    const { reportId, month, followers, engagement, bestPost, projectId } = body;
 
-    if (!designId) {
+    if (!reportId) {
       return NextResponse.json(
-        { success: false, message: "Design ID is required." },
+        { success: false, message: "Report ID is required." },
         { status: 400 }
       );
     }
 
-    const existingDesign = await prisma.design.findUnique({
-      where: { id: Number(designId) },
-      include: { approvals: true },
+    const existingReport = await prisma.report.findUnique({
+      where: { id: Number(reportId) },
     });
 
-    if (!existingDesign) {
+    if (!existingReport) {
       return NextResponse.json(
-        { success: false, message: "Design not found." },
+        { success: false, message: "Report not found." },
         { status: 404 }
       );
     }
@@ -226,40 +171,14 @@ export async function PATCH(request: Request) {
       }
     }
 
-    if (designerId !== undefined && designerId !== null && designerId !== "") {
-      const existingDesigner = await prisma.user.findFirst({
-        where: {
-          id: Number(designerId),
-          role: "designer",
-        },
-      });
-
-      if (!existingDesigner) {
-        return NextResponse.json(
-          { success: false, message: "Designer not found." },
-          { status: 404 }
-        );
-      }
-    }
-
-    const updatedDesign = await prisma.design.update({
-      where: { id: Number(designId) },
+    const report = await prisma.report.update({
+      where: { id: Number(reportId) },
       data: {
-        ...(name !== undefined ? { name } : {}),
-        ...(type !== undefined ? { type } : {}),
-        ...(deliveryDate !== undefined ? { deliveryDate } : {}),
-        ...(status !== undefined ? { status } : {}),
+        ...(month !== undefined ? { month } : {}),
+        ...(followers !== undefined ? { followers } : {}),
+        ...(engagement !== undefined ? { engagement } : {}),
+        ...(bestPost !== undefined ? { bestPost } : {}),
         ...(projectId !== undefined ? { projectId: Number(projectId) } : {}),
-        ...(designerId !== undefined
-          ? {
-              designerId:
-                designerId === null || designerId === ""
-                  ? null
-                  : Number(designerId),
-            }
-          : {}),
-        ...(designerNotes !== undefined ? { designerNotes } : {}),
-        ...(clientComments !== undefined ? { clientComments } : {}),
       },
       include: {
         project: {
@@ -271,28 +190,16 @@ export async function PATCH(request: Request) {
             },
           },
         },
-        approvals: true,
-        designer: true,
       },
     });
 
-    if (status === "Approved" || status === "Rejected") {
-      await prisma.approval.create({
-        data: {
-          designId: Number(designId),
-          status,
-          notes: approvalNotes || null,
-        },
-      });
-    }
-
     return NextResponse.json({
       success: true,
-      message: "Design updated successfully.",
-      design: updatedDesign,
+      message: "Report updated successfully.",
+      report,
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS PATCH ERROR:", error);
+    console.error("COMPANY REPORTS PATCH ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -312,36 +219,36 @@ export async function DELETE(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const designId = searchParams.get("designId");
+    const reportId = searchParams.get("reportId");
 
-    if (!designId) {
+    if (!reportId) {
       return NextResponse.json(
-        { success: false, message: "Design ID is required." },
+        { success: false, message: "Report ID is required." },
         { status: 400 }
       );
     }
 
-    const existingDesign = await prisma.design.findUnique({
-      where: { id: Number(designId) },
+    const existingReport = await prisma.report.findUnique({
+      where: { id: Number(reportId) },
     });
 
-    if (!existingDesign) {
+    if (!existingReport) {
       return NextResponse.json(
-        { success: false, message: "Design not found." },
+        { success: false, message: "Report not found." },
         { status: 404 }
       );
     }
 
-    await prisma.design.delete({
-      where: { id: Number(designId) },
+    await prisma.report.delete({
+      where: { id: Number(reportId) },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Design deleted successfully.",
+      message: "Report deleted successfully.",
     });
   } catch (error) {
-    console.error("COMPANY DESIGNS DELETE ERROR:", error);
+    console.error("COMPANY REPORTS DELETE ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

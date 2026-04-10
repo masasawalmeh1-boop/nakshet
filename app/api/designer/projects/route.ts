@@ -8,17 +8,21 @@ export async function GET(request: Request) {
 
     if (!designerId) {
       return NextResponse.json(
-        { success: false, message: "designerId is required." },
+        { success: false, message: "Designer ID is required." },
         { status: 400 }
       );
     }
 
     const projects = await prisma.project.findMany({
       where: {
-        designerId,
+        designs: {
+          some: {
+            designerId: designerId,
+          },
+        },
       },
       include: {
-        owner: true,
+        user: true,
         uploads: {
           orderBy: {
             createdAt: "desc",
@@ -31,11 +35,14 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, projects });
+    return NextResponse.json({
+      success: true,
+      projects,
+    });
   } catch (error) {
     console.error("DESIGNER PROJECTS ERROR:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to load projects." },
+      { success: false, message: "Failed to load designer projects." },
       { status: 500 }
     );
   }
