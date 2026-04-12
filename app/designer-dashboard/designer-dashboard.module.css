@@ -122,18 +122,53 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .alertBtn {
   width: 44px;
   height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.alertBtn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  color: currentColor;
+  opacity: 1;
+}
+
+.themeToggleBtn {
+  border: none;
+  background: linear-gradient(135deg, #f8fafc, #dbeafe);
+  color: #1e293b;
+  border-radius: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.themeToggleBtn:hover {
+  transform: translateY(-1px);
 }
 
 .logoutBtn {
@@ -181,11 +216,12 @@
 
 .loading,
 .emptyState {
-  min-height: 300px;
+  min-height: 220px;
   display: grid;
   place-items: center;
   color: #a8bbd5;
   font-size: 18px;
+  text-align: center;
 }
 
 .statsGrid {
@@ -228,6 +264,7 @@
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 18px;
+  margin-bottom: 18px;
 }
 
 .panel {
@@ -258,10 +295,6 @@
   margin: 0;
 }
 
-.chatSidebar .panelHead {
-  margin-bottom: 14px;
-}
-
 .cardList {
   display: flex;
   flex-direction: column;
@@ -286,19 +319,22 @@
 
 .infoCard h4,
 .uploadCard h4,
-.projectCard h4 {
+.projectCard h4,
+.activityCard h4 {
   margin: 0 0 6px;
 }
 
 .infoCard p,
 .uploadCard p,
-.projectCard p {
+.projectCard p,
+.activityCard p {
   margin: 0 0 5px;
   color: #b1c2d8;
 }
 
 .infoCard span,
-.uploadCard span {
+.uploadCard span,
+.activityCard span {
   color: #8ea4c1;
   font-size: 13px;
 }
@@ -393,6 +429,7 @@
   padding: 13px 14px;
   outline: none;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .uploadForm button {
@@ -532,7 +569,6 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0;
   text-align: left;
   padding: 16px;
   cursor: pointer;
@@ -732,6 +768,25 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.chatMediaImage {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.chatMediaVideo {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 16px;
+  background: #000;
+  display: block;
+  margin-bottom: 8px;
+}
+
 .messageComposer {
   display: flex;
   gap: 12px;
@@ -779,20 +834,6 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 18px;
   padding: 16px;
-}
-
-.activityCard h4 {
-  margin: 0 0 6px;
-}
-
-.activityCard p {
-  margin: 0 0 6px;
-  color: #b1c2d8;
-}
-
-.activityCard span {
-  color: #8ea4c1;
-  font-size: 13px;
 }
 
 .activityDot {
@@ -863,90 +904,136 @@
   padding: 13px 14px;
   outline: none;
   width: 100%;
+  box-sizing: border-box;
 }
 
-.participantsBox {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 18px;
-  padding: 14px;
+.lightMode {
+  background: #f4f7fb;
+  color: #1f2a44;
 }
 
-.participantsBox h4 {
-  margin: 0 0 12px;
-  font-size: 14px;
+.lightMode .sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #edf3fb 100%);
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-.participantsList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 4px;
+.lightMode .main {
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 25%),
+    radial-gradient(circle at top left, rgba(147, 197, 253, 0.14), transparent 20%),
+    #f4f7fb;
 }
 
-.participantItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: rgba(13, 22, 38, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
+.lightMode .brand h2,
+.lightMode .topbar h1,
+.lightMode .panelHead h3,
+.lightMode .infoCard h4,
+.lightMode .projectCard h4,
+.lightMode .uploadCard h4,
+.lightMode .activityCard h4,
+.lightMode .profileBox strong,
+.lightMode .chatListItem strong,
+.lightMode .chatHeader h3,
+.lightMode .messageBubble strong {
+  color: #1f2a44;
 }
 
-.participantItem input {
-  width: auto;
-  margin-top: 4px;
+.lightMode .brand p,
+.lightMode .sidebarCard p,
+.lightMode .topbar p,
+.lightMode .profileBox span,
+.lightMode .infoCard p,
+.lightMode .uploadCard p,
+.lightMode .projectCard p,
+.lightMode .activityCard p,
+.lightMode .infoCard span,
+.lightMode .uploadCard span,
+.lightMode .activityCard span,
+.lightMode .chatProjectName,
+.lightMode .chatPreviewText,
+.lightMode .chatTime,
+.lightMode .chatHeader p,
+.lightMode .messageBubble span {
+  color: #5b6b84;
 }
 
-.participantItem strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 14px;
+.lightMode .nav button {
+  color: #334155;
 }
 
-.participantItem span {
-  display: block;
-  color: #9bb0ca;
-  font-size: 12px;
-  line-height: 1.5;
+.lightMode .nav button:hover,
+.lightMode .activeNav {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: #0f172a !important;
 }
 
-.participantsLoading {
-  color: #9fb1c9;
-  font-size: 14px;
-  text-align: center;
-  padding: 10px 0;
+.lightMode .alertBtn {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  color: #1f2a44 !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08) !important;
 }
 
-.modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
+.lightMode .alertBtn svg {
+  stroke: #1f2a44 !important;
+  color: #1f2a44 !important;
+  opacity: 1 !important;
 }
 
-.modalCancelBtn {
-  border: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-  border-radius: 14px;
-  padding: 12px 16px;
-  cursor: pointer;
-  font-weight: 600;
+.lightMode .panel,
+.lightMode .chatSidebar,
+.lightMode .chatPanel,
+.lightMode .statCard,
+.lightMode .profileBox,
+.lightMode .sidebarCard,
+.lightMode .modalCard {
+  background: rgba(255, 255, 255, 0.96);
+  color: #1f2a44;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
-.modalCreateBtn {
-  border: none;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: white;
-  border-radius: 14px;
-  padding: 12px 16px;
-  cursor: pointer;
-  font-weight: 600;
+.lightMode .infoCard,
+.lightMode .uploadCard,
+.lightMode .projectCard,
+.lightMode .activityCard,
+.lightMode .chatListItem {
+  background: #ffffff;
+  color: #1f2a44;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.lightMode .searchBox,
+.lightMode .uploadForm input,
+.lightMode .uploadForm select,
+.lightMode .uploadForm textarea,
+.lightMode .modalBody input,
+.lightMode .modalBody select,
+.lightMode .messageComposer input {
+  background: #ffffff;
+  color: #1f2a44;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.lightMode .searchBox input::placeholder,
+.lightMode .messageComposer input::placeholder {
+  color: #64748b;
+}
+
+.lightMode .myMessage {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e3a8a;
+}
+
+.lightMode .theirMessage {
+  background: #ffffff;
+  color: #1f2a44;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.lightMode .memberBadge {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
 }
 
 @media (max-width: 1100px) {
@@ -980,8 +1067,7 @@
     max-height: 260px;
   }
 
-  .formActions,
-  .modalActions {
+  .formActions {
     flex-direction: column;
   }
 
@@ -994,118 +1080,36 @@
     width: 100%;
     justify-content: center;
   }
-  .chatToolsRow {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
 }
 
-.toolBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-  border-radius: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-size: 13px;
-}
+@media (max-width: 768px) {
+  .main {
+    padding: 18px;
+  }
 
-.hiddenInput {
-  display: none;
-}
+  .sidebar {
+    padding: 18px 14px;
+  }
 
-.emojiBar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
+  .topbar h1 {
+    font-size: 24px;
+  }
 
-.emojiBar button {
-  border: none;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 8px 10px;
-  cursor: pointer;
-  font-size: 18px;
-}
+  .profileBox {
+    width: 100%;
+  }
 
-.messageActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
+  .topbarRight {
+    width: 100%;
+  }
 
-.messageActions button {
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 12px;
-}
+  .themeToggleBtn,
+  .logoutBtn {
+    width: 100%;
+    justify-content: center;
+  }
 
-.editMessageBox {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.editMessageBox input {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  padding: 10px 12px;
-  outline: none;
-}
-
-.editMessageActions {
-  display: flex;
-  gap: 8px;
-}
-
-.editMessageActions button {
-  border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  border-radius: 10px;
-  padding: 8px 10px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.mediaMessageBox {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.chatMediaImage {
-  max-width: 260px;
-  width: 100%;
-  border-radius: 16px;
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.chatMediaVideo {
-  max-width: 300px;
-  width: 100%;
-  border-radius: 16px;
-  background: #000;
-}
-
-.mediaCaption {
-  margin: 0 !important;
-}
+  .messageBubble {
+    max-width: 100%;
+  }
 }

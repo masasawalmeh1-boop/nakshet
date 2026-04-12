@@ -1,50 +1,52 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { name, email, password, role } = body;
+    const { email, password } = await request.json();
 
-    if (!name || !email || !password || !role) {
+    if (!email || !password) {
       return NextResponse.json(
-        { success: false, message: "All fields are required." },
+        { success: false, message: "Email and password are required." },
         { status: 400 }
       );
     }
 
-    const existingUser = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (existingUser) {
+    if (!user) {
       return NextResponse.json(
-        { success: false, message: "This email is already registered." },
-        { status: 400 }
+        { success: false, message: "Invalid email or password." },
+        { status: 401 }
       );
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-        role,
-      },
-    });
+    if (!isPasswordCorrect) {
+      return NextResponse.json(
+        { success: false, message: "Invalid email or password." },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Account created successfully.",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
+    console.error("LOGIN ERROR:", error);
 
     return NextResponse.json(
-      { success: false, message: "Server error in register route." },
+      { success: false, message: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

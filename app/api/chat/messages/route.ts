@@ -1,113 +1,234 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import fs from "fs";
-import path from "path";
 
-function buildMediaMessage(params: {
-  mediaType: "image" | "video";
-  url: string;
-  fileName: string;
-  caption?: string;
-}) {
-  const payload = {
-    kind: "media",
-    mediaType: params.mediaType,
-    url: params.url,
-    fileName: params.fileName,
-    caption: params.caption || "",
-  };
-
-  return `__CHAT_MEDIA__${JSON.stringify(payload)}`;
-}
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
+    const body = await request.json();
 
-    const conversationId = Number(formData.get("conversationId"));
-    const senderId = Number(formData.get("senderId"));
-    const caption = String(formData.get("caption") || "");
-    const file = formData.get("file") as File | null;
+    const conversationId = Number(body.conversationId);
+    const userId = Number(body.userId);
+    const text = String(body.text || "").trim();
 
-    if (!conversationId || !senderId || !file) {
+    if (!conversationId || !userId || !text) {
       return NextResponse.json(
         {
           success: false,
-          message: "conversationId, senderId and file are required.",
+          message: "conversationId, userId, and text are required.",
         },
         { status: 400 }
       );
     }
 
-    const member = await prisma.conversationMember.findFirst({
+    const participant = await prisma.chatParticipant.findFirst({
       where: {
-        conversationId,
-        userId: senderId,
+        chatId: conversationId,
+        userId,
       },
     });
 
-    if (!member) {
+    if (!participant) {
       return NextResponse.json(
-        { success: false, message: "User is not a member of this conversation." },
+        {
+          success: false,
+          message: "You are not a participant in this chat.",
+        },
         { status: 403 }
       );
     }
 
-    const mimeType = file.type || "";
-    const mediaType = mimeType.startsWith("video/")
-      ? "video"
-      : mimeType.startsWith("image/")
-      ? "image"
-      : null;
-
-    if (!mediaType) {
-      return NextResponse.json(
-        { success: false, message: "Only image and video files are allowed." },
-        { status: 400 }
-      );
-    }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const mediaDir = path.join(process.cwd(), "public", "chat-media");
-
-    if (!fs.existsSync(mediaDir)) {
-      fs.mkdirSync(mediaDir, { recursive: true });
-    }
-
-    const safeName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-    const filePath = path.join(mediaDir, safeName);
-
-    fs.writeFileSync(filePath, buffer);
-
-    const fileUrl = `/chat-media/${safeName}`;
-    const encodedText = buildMediaMessage({
-      mediaType,
-      url: fileUrl,
-      fileName: safeName,
-      caption,
-    });
-
-    const message = await prisma.message.create({
+    const createdMessage = await prisma.message.create({
       data: {
-        conversationId,
-        senderId,
-        text: encodedText,
+        chatId: conversationId,
+        senderId: userId,
+        text,
       },
       include: {
         sender: true,
       },
     });
 
+    await prisma.chat.update({
+      where: { id: conversationId },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+
     return NextResponse.json({
       success: true,
-      message,
+      message: {
+        id: createdMessage.id,
+        text: createdMessage.text,
+        createdAt: createdMessage.createdAt,
+        sender: {
+          id: createdMessage.sender.id,
+          name: createdMessage.sender.name,
+          role: createdMessage.sender.role,
+        },
+      },
     });
   } catch (error) {
-    console.error("UPLOAD CHAT MEDIA ERROR:", error);
+    console.error("CHAT MESSAGE POST ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to upload chat media." },
+      {
+        success: false,
+        message: "Failed to send message.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const messageId = Number(body.messageId);
+    const userId = Number(body.userId);
+    const text = String(body.text || "").trim();
+
+    if (!messageId || !userId || !text) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "messageId, userId, and text are required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const existingMessage = await prisma.message.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!existingMessage) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Message not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (existingMessage.senderId !== userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "You can only edit your own messages.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const updatedMessage = await prisma.message.update({
+      where: { id: messageId },
+      data: { text },
+      include: {
+        sender: true,
+      },
+    });
+
+    await prisma.chat.update({
+      where: { id: existingMessage.chatId },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: {
+        id: updatedMessage.id,
+        text: updatedMessage.text,
+        createdAt: updatedMessage.createdAt,
+        sender: {
+          id: updatedMessage.sender.id,
+          name: updatedMessage.sender.name,
+          role: updatedMessage.sender.role,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("CHAT MESSAGE PATCH ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to update message.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const messageId = Number(body.messageId);
+    const userId = Number(body.userId);
+
+    if (!messageId || !userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "messageId and userId are required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const existingMessage = await prisma.message.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!existingMessage) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Message not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (existingMessage.senderId !== userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "You can only delete your own messages.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const chatId = existingMessage.chatId;
+
+    await prisma.message.delete({
+      where: { id: messageId },
+    });
+
+    await prisma.chat.update({
+      where: { id: chatId },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Message deleted successfully.",
+    });
+  } catch (error) {
+    console.error("CHAT MESSAGE DELETE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to delete message.",
+      },
       { status: 500 }
     );
   }

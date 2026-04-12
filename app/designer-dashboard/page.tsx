@@ -25,21 +25,11 @@ import {
   Users,
   Smile,
   Paperclip,
+  BarChart3,
+  BadgeDollarSign,
+  Sun,
+  Moon,
 } from "lucide-react";
-
-type Project = {
-  id: number;
-  name: string;
-  service: string;
-  status: string;
-  deadline: string;
-  owner: {
-    id: number;
-    name: string;
-    email: string;
-  };
-  uploads: UploadItem[];
-};
 
 type UploadItem = {
   id: number;
@@ -55,6 +45,20 @@ type UploadItem = {
     name: string;
     deadline?: string;
   } | null;
+};
+
+type Project = {
+  id: number;
+  name: string;
+  service: string;
+  status: string;
+  deadline: string;
+  owner: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  uploads: UploadItem[];
 };
 
 type Conversation = {
@@ -100,9 +104,206 @@ type ParsedMediaMessage = {
   caption?: string;
 };
 
-const DEMO_DESIGNER_ID = 2;
+type AdItem = {
+  id: number;
+  campaignName: string;
+  platform: string;
+  budget: string;
+  startDate: string;
+  endDate: string;
+  impressions: number;
+  clicks: number;
+  leads: number;
+  costPerResult: string;
+};
+
+type ReportItem = {
+  id: number;
+  projectName: string;
+  followers: number;
+  growth: string;
+  engagement: string;
+  bestPost: string;
+  adsPerformance: string;
+  recommendation: string;
+};
+
+type LoggedInUser = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+};
+
 const STORAGE_KEY = "designer_selected_conversation";
+const THEME_KEY = "designerTheme";
 const EMOJIS = ["😀", "😂", "😍", "🔥", "👏", "🎉", "❤️", "👍", "🤝", "😎"];
+
+const demoProjects: Project[] = [
+  {
+    id: 101,
+    name: "Spring Fashion Campaign",
+    service: "Social Media Design",
+    status: "In Progress",
+    deadline: "2026-04-25",
+    owner: {
+      id: 201,
+      name: "Lina Fashion",
+      email: "client@nakshat.com",
+    },
+    uploads: [],
+  },
+  {
+    id: 102,
+    name: "Restaurant Launch Ads",
+    service: "Ads Management",
+    status: "Waiting Approval",
+    deadline: "2026-04-29",
+    owner: {
+      id: 202,
+      name: "Nakshat Company",
+      email: "company@nakshat.com",
+    },
+    uploads: [],
+  },
+];
+
+const demoUploads: UploadItem[] = [
+  {
+    id: 301,
+    title: "Spring Instagram Post",
+    fileUrl:
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1200&q=80",
+    fileType: "JPG",
+    category: "design",
+    status: "Pending Review",
+    note: "Need a bigger title and stronger CTA.",
+    createdAt: "2026-04-10T10:00:00.000Z",
+    project: {
+      id: 101,
+      name: "Spring Fashion Campaign",
+      deadline: "2026-04-25",
+    },
+  },
+  {
+    id: 302,
+    title: "Restaurant Promo Reel",
+    fileUrl: "https://www.w3schools.com/html/movie.mp4",
+    fileType: "MP4",
+    category: "video",
+    status: "Waiting Client Approval",
+    note: "Waiting final approval before publishing.",
+    createdAt: "2026-04-12T15:00:00.000Z",
+    project: {
+      id: 102,
+      name: "Restaurant Launch Ads",
+      deadline: "2026-04-29",
+    },
+  },
+];
+
+const demoConversations: Conversation[] = [
+  {
+    id: 401,
+    title: "Lina Fashion",
+    project: {
+      id: 101,
+      name: "Spring Fashion Campaign",
+    },
+    members: [
+      {
+        id: 1,
+        user: {
+          id: 2,
+          name: "Sara Designer",
+          email: "designer@nakshat.com",
+          role: "designer",
+        },
+      },
+      {
+        id: 2,
+        user: {
+          id: 201,
+          name: "Lina Fashion",
+          email: "client@nakshat.com",
+          role: "client",
+        },
+      },
+    ],
+    messages: [
+      {
+        id: 501,
+        text: "Please increase the title size in the first design.",
+        createdAt: "2026-04-10T10:30:00.000Z",
+        sender: {
+          id: 201,
+          name: "Lina Fashion",
+          role: "client",
+        },
+      },
+      {
+        id: 502,
+        text: "Done, I will upload the updated version tonight.",
+        createdAt: "2026-04-10T11:00:00.000Z",
+        sender: {
+          id: 2,
+          name: "Sara Designer",
+          role: "designer",
+        },
+      },
+    ],
+  },
+  {
+    id: 402,
+    title: "Nakshat Company",
+    project: {
+      id: 102,
+      name: "Restaurant Launch Ads",
+    },
+    members: [
+      {
+        id: 3,
+        user: {
+          id: 2,
+          name: "Sara Designer",
+          email: "designer@nakshat.com",
+          role: "designer",
+        },
+      },
+      {
+        id: 4,
+        user: {
+          id: 202,
+          name: "Nakshat Company",
+          email: "company@nakshat.com",
+          role: "company",
+        },
+      },
+    ],
+    messages: [
+      {
+        id: 503,
+        text: "The promo reel looks good. Waiting for final approval.",
+        createdAt: "2026-04-12T14:10:00.000Z",
+        sender: {
+          id: 202,
+          name: "Nakshat Company",
+          role: "company",
+        },
+      },
+      {
+        id: 504,
+        text: "I also prepared a story ad for the same campaign.",
+        createdAt: "2026-04-12T14:40:00.000Z",
+        sender: {
+          id: 2,
+          name: "Sara Designer",
+          role: "designer",
+        },
+      },
+    ],
+  },
+];
 
 function parseMessageContent(text: string): ParsedMediaMessage {
   if (text.startsWith("__CHAT_MEDIA__")) {
@@ -130,6 +331,20 @@ function parseMessageContent(text: string): ParsedMediaMessage {
   };
 }
 
+function getChatDisplayName(chat: Conversation, currentUserId?: number) {
+  const otherMembers = chat.members.filter((member) => member.user.id !== currentUserId);
+
+  if (otherMembers.length === 1) {
+    return otherMembers[0].user.name;
+  }
+
+  if (chat.title && chat.title.trim()) {
+    return chat.title;
+  }
+
+  return "New Chat";
+}
+
 export default function DesignerDashboardPage() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -140,7 +355,6 @@ export default function DesignerDashboardPage() {
   const [conversationSearch, setConversationSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [editingUploadId, setEditingUploadId] = useState<number | null>(null);
 
   const [showCreateChatModal, setShowCreateChatModal] = useState(false);
@@ -154,6 +368,9 @@ export default function DesignerDashboardPage() {
   const [editingMessageText, setEditingMessageText] = useState("");
   const [showEmojiBar, setShowEmojiBar] = useState(false);
   const [sendingMedia, setSendingMedia] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState<LoggedInUser | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   const mediaInputRef = useRef<HTMLInputElement | null>(null);
   const messageAreaRef = useRef<HTMLDivElement | null>(null);
@@ -171,50 +388,99 @@ export default function DesignerDashboardPage() {
     projectId: "",
   });
 
-  async function loadData() {
-    try {
-      setLoading(true);
+  async function loadData(userId: number) {
+  try {
+    setLoading(true);
 
-      const [projectsRes, uploadsRes, chatRes] = await Promise.all([
-        fetch(`/api/designer/projects?designerId=${DEMO_DESIGNER_ID}`),
-        fetch(`/api/uploads?designerId=${DEMO_DESIGNER_ID}`),
-        fetch(`/api/chat/conversations?userId=${DEMO_DESIGNER_ID}`),
-      ]);
+    const [projectsRes, uploadsRes, chatRes] = await Promise.all([
+      fetch(`/api/designer/projects?designerId=${userId}`, { cache: "no-store" }),
+      fetch(`/api/uploads?designerId=${userId}`, { cache: "no-store" }),
+      fetch(`/api/chat/conversations?userId=${userId}`, { cache: "no-store" }),
+    ]);
 
-      const projectsData = await projectsRes.json();
-      const uploadsData = await uploadsRes.json();
-      const chatData = await chatRes.json();
+    const projectsData = await projectsRes.json().catch(() => ({
+      success: false,
+      projects: [],
+    }));
 
-      if (projectsData.success) setProjects(projectsData.projects);
-      if (uploadsData.success) setUploads(uploadsData.uploads);
+    const uploadsData = await uploadsRes.json().catch(() => ({
+      success: false,
+      uploads: [],
+    }));
 
-      if (chatData.success) {
-        const loadedConversations = chatData.conversations as Conversation[];
-        setConversations(loadedConversations);
+    const chatData = await chatRes.json().catch(() => ({
+      success: false,
+      conversations: [],
+    }));
 
-        const savedConversationId = Number(localStorage.getItem(STORAGE_KEY));
+    const loadedProjects: Project[] = projectsData.success ? projectsData.projects || [] : [];
+    const loadedUploads: UploadItem[] = uploadsData.success ? uploadsData.uploads || [] : [];
+    const loadedConversations: Conversation[] = chatData.success
+      ? chatData.conversations || []
+      : [];
 
-        if (
-          savedConversationId &&
-          loadedConversations.some((item) => item.id === savedConversationId)
-        ) {
-          setSelectedConversationId(savedConversationId);
-        } else if (loadedConversations.length > 0) {
-          setSelectedConversationId(loadedConversations[0].id);
-        } else {
-          setSelectedConversationId(null);
-        }
-      }
-    } catch (error) {
-      console.error("LOAD DESIGNER DATA ERROR:", error);
-    } finally {
-      setLoading(false);
+    setProjects(loadedProjects.length > 0 ? loadedProjects : demoProjects);
+    setUploads(loadedUploads.length > 0 ? loadedUploads : demoUploads);
+
+    // مهم جدًا: لا تستخدمي demoConversations
+    setConversations(loadedConversations);
+
+    const savedConversationId = Number(localStorage.getItem(STORAGE_KEY));
+
+    if (
+      savedConversationId &&
+      loadedConversations.some((item) => item.id === savedConversationId)
+    ) {
+      setSelectedConversationId(savedConversationId);
+    } else if (loadedConversations.length > 0) {
+      setSelectedConversationId(loadedConversations[0].id);
+    } else {
+      setSelectedConversationId(null);
     }
+  } catch (error) {
+    console.error("LOAD DESIGNER DATA ERROR:", error);
+    setProjects(demoProjects);
+    setUploads(demoUploads);
+    setConversations([]);
+    setSelectedConversationId(null);
+  } finally {
+    setLoading(false);
   }
+}
+  useEffect(() => {
+    const rawUser = localStorage.getItem("loggedInUser");
+
+    if (!rawUser) {
+      window.location.href = "/";
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(rawUser) as LoggedInUser;
+
+      if (!parsedUser?.id || parsedUser.role !== "designer") {
+        window.location.href = "/";
+        return;
+      }
+
+      setCurrentUser(parsedUser);
+      loadData(parsedUser.id);
+    } catch (error) {
+      console.error("READ LOGGED IN USER ERROR:", error);
+      window.location.href = "/";
+    }
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, [refreshKey]);
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme === "light" || savedTheme === "dark") {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
   useEffect(() => {
     if (selectedConversationId) {
@@ -224,47 +490,44 @@ export default function DesignerDashboardPage() {
 
   useEffect(() => {
     async function loadParticipants() {
-      if (!createChatForm.projectId) {
-        setAvailableParticipants([]);
-        setSelectedParticipantIds([]);
+      if (!currentUser?.id || !showCreateChatModal) {
         return;
       }
 
       try {
         setParticipantsLoading(true);
 
-        const res = await fetch(
-          `/api/chat/participants?projectId=${createChatForm.projectId}`
-        );
-        const data = await res.json();
+        const res = await fetch(`/api/chat/participants?userId=${currentUser.id}`, {
+          cache: "no-store",
+        });
+
+        const data = await res.json().catch(() => ({
+          success: false,
+          participants: [],
+        }));
 
         if (data.success) {
-          const participants = (data.participants as Participant[]).filter(
-            (item) => item.id !== DEMO_DESIGNER_ID
-          );
-
-          setAvailableParticipants(participants);
-          setSelectedParticipantIds(participants.map((item) => item.id));
+          setAvailableParticipants(data.participants || []);
+        } else {
+          setAvailableParticipants([]);
         }
       } catch (error) {
         console.error("LOAD PARTICIPANTS ERROR:", error);
+        setAvailableParticipants([]);
       } finally {
         setParticipantsLoading(false);
       }
     }
 
-    if (showCreateChatModal) {
-      loadParticipants();
-    }
-  }, [createChatForm.projectId, showCreateChatModal]);
+    loadParticipants();
+  }, [showCreateChatModal, currentUser]);
 
   const filteredConversations = useMemo(() => {
     const search = conversationSearch.trim().toLowerCase();
-
     if (!search) return conversations;
 
     return conversations.filter((chat) => {
-      const titleMatch = chat.title.toLowerCase().includes(search);
+      const displayName = getChatDisplayName(chat, currentUser?.id).toLowerCase();
       const projectMatch = chat.project?.name?.toLowerCase().includes(search);
 
       const memberMatch = chat.members.some((member) => {
@@ -273,9 +536,9 @@ export default function DesignerDashboardPage() {
         return memberName.includes(search) || memberEmail.includes(search);
       });
 
-      return titleMatch || projectMatch || memberMatch;
+      return displayName.includes(search) || projectMatch || memberMatch;
     });
-  }, [conversationSearch, conversations]);
+  }, [conversationSearch, conversations, currentUser]);
 
   const selectedConversation = useMemo(() => {
     return conversations.find((item) => item.id === selectedConversationId) || null;
@@ -296,9 +559,7 @@ export default function DesignerDashboardPage() {
 
     if (parsed.kind === "media") {
       preview = parsed.mediaType === "video" ? "🎬 Video" : "🖼️ Image";
-      if (parsed.caption) {
-        preview += ` • ${parsed.caption}`;
-      }
+      if (parsed.caption) preview += ` • ${parsed.caption}`;
     } else {
       preview = parsed.text || "No messages yet.";
     }
@@ -322,181 +583,48 @@ export default function DesignerDashboardPage() {
 
     scrollToBottom();
     const timeout = setTimeout(scrollToBottom, 80);
-
     return () => clearTimeout(timeout);
-  }, [
-    activeSection,
-    selectedConversationId,
-    selectedConversation?.messages.length,
-    conversations,
-  ]);
-
-  async function handleSendMessage() {
-    if (!messageText.trim() || !selectedConversationId) return;
-
-    try {
-      const res = await fetch("/api/chat/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          conversationId: selectedConversationId,
-          senderId: DEMO_DESIGNER_ID,
-          text: messageText,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setMessageText("");
-        setShowEmojiBar(false);
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        alert(data.message || "Failed to send message.");
-      }
-    } catch (error) {
-      console.error("SEND MESSAGE ERROR:", error);
-      alert("Failed to send message.");
-    }
-  }
-
-  async function handleEditMessage(messageId: number) {
-    if (!editingMessageText.trim()) return;
-
-    try {
-      const res = await fetch(`/api/chat/messages/${messageId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: editingMessageText,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setEditingMessageId(null);
-        setEditingMessageText("");
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        alert(data.message || "Failed to update message.");
-      }
-    } catch (error) {
-      console.error("EDIT MESSAGE ERROR:", error);
-      alert("Failed to update message.");
-    }
-  }
-
-  async function handleDeleteMessage(messageId: number) {
-    const confirmed = window.confirm("Delete this message?");
-    if (!confirmed) return;
-
-    try {
-      const res = await fetch(`/api/chat/messages/${messageId}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        alert(data.message || "Failed to delete message.");
-      }
-    } catch (error) {
-      console.error("DELETE MESSAGE ERROR:", error);
-      alert("Failed to delete message.");
-    }
-  }
-
-  async function handleMediaUpload(file: File) {
-    if (!selectedConversationId) return;
-
-    try {
-      setSendingMedia(true);
-
-      const formData = new FormData();
-      formData.append("conversationId", String(selectedConversationId));
-      formData.append("senderId", String(DEMO_DESIGNER_ID));
-      formData.append("caption", messageText);
-      formData.append("file", file);
-
-      const res = await fetch("/api/chat/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setMessageText("");
-        setShowEmojiBar(false);
-        if (mediaInputRef.current) {
-          mediaInputRef.current.value = "";
-        }
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        alert(data.message || "Failed to upload media.");
-      }
-    } catch (error) {
-      console.error("UPLOAD MEDIA ERROR:", error);
-      alert("Failed to upload media.");
-    } finally {
-      setSendingMedia(false);
-    }
-  }
-
-  function toggleParticipant(id: number) {
-    setSelectedParticipantIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  }
+  }, [activeSection, selectedConversationId, selectedConversation?.messages.length, conversations]);
 
   async function handleCreateChat() {
-    if (!createChatForm.title.trim() || !createChatForm.projectId) {
-      alert("Please enter chat title and select a project.");
+    if (!currentUser || selectedParticipantIds.length === 0) {
+      alert("Please choose a person first.");
       return;
     }
 
+    const selectedUser = availableParticipants.find(
+      (item) => item.id === selectedParticipantIds[0]
+    );
+
     try {
       setCreatingChat(true);
+
+      const payload = {
+        title: selectedUser?.name || createChatForm.title || "New Chat",
+        projectId: createChatForm.projectId ? Number(createChatForm.projectId) : null,
+        creatorId: currentUser.id,
+        participantIds: selectedParticipantIds,
+      };
 
       const res = await fetch("/api/chat/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title: createChatForm.title,
-          projectId: Number(createChatForm.projectId),
-          creatorId: DEMO_DESIGNER_ID,
-          memberIds: selectedParticipantIds,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ success: false }));
 
-      if (data.success) {
-        const newConversation = data.conversation as Conversation;
-
-        setConversations((prev) => [newConversation, ...prev]);
-        setSelectedConversationId(newConversation.id);
-        setActiveSection("messages");
-        setShowCreateChatModal(false);
-        setAvailableParticipants([]);
-        setSelectedParticipantIds([]);
-        setCreateChatForm({
-          title: "",
-          projectId: "",
-        });
-        localStorage.setItem(STORAGE_KEY, String(newConversation.id));
-      } else {
+      if (!data.success) {
         alert(data.message || "Failed to create chat.");
+        return;
       }
+
+      setShowCreateChatModal(false);
+      setCreateChatForm({ title: "", projectId: "" });
+      setSelectedParticipantIds([]);
+      await loadData(currentUser.id);
     } catch (error) {
       console.error("CREATE CHAT ERROR:", error);
       alert("Failed to create chat.");
@@ -505,138 +633,8 @@ export default function DesignerDashboardPage() {
     }
   }
 
-  async function handleDeleteChat() {
-    if (!selectedConversationId) return;
-
-    const confirmed = window.confirm("Are you sure you want to delete this chat?");
-    if (!confirmed) return;
-
-    try {
-      setDeletingChat(true);
-
-      const res = await fetch("/api/chat/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          conversationId: selectedConversationId,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        const remaining = conversations.filter(
-          (item) => item.id !== selectedConversationId
-        );
-
-        setConversations(remaining);
-
-        if (remaining.length > 0) {
-          setSelectedConversationId(remaining[0].id);
-          localStorage.setItem(STORAGE_KEY, String(remaining[0].id));
-        } else {
-          setSelectedConversationId(null);
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      } else {
-        alert(data.message || "Failed to delete chat.");
-      }
-    } catch (error) {
-      console.error("DELETE CHAT ERROR:", error);
-      alert("Failed to delete chat.");
-    } finally {
-      setDeletingChat(false);
-    }
-  }
-
-  async function handleUploadFile(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const fileInput = document.getElementById("designerFile") as HTMLInputElement | null;
-    const file = fileInput?.files?.[0];
-
-    if (!editingUploadId && !file) {
-      alert("Please choose a file first.");
-      return;
-    }
-
-    try {
-      setUploading(true);
-
-      if (editingUploadId) {
-        const res = await fetch(`/api/uploads/${editingUploadId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: uploadForm.title,
-            category: uploadForm.category,
-            status: uploadForm.status,
-            note: uploadForm.note,
-            projectId: uploadForm.projectId ? Number(uploadForm.projectId) : null,
-          }),
-        });
-
-        const data = await res.json();
-
-        if (!data.success) {
-          alert(data.message || "Update failed.");
-          return;
-        }
-
-        alert("Upload updated successfully.");
-      } else {
-        const formData = new FormData();
-        formData.append("title", uploadForm.title);
-        formData.append("category", uploadForm.category);
-        formData.append("status", uploadForm.status);
-        formData.append("note", uploadForm.note);
-        formData.append("uploaderId", String(DEMO_DESIGNER_ID));
-        formData.append("file", file as File);
-
-        if (uploadForm.projectId) {
-          formData.append("projectId", uploadForm.projectId);
-        }
-
-        const res = await fetch("/api/uploads", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-
-        if (!data.success) {
-          alert(data.message || "Upload failed.");
-          return;
-        }
-
-        alert("File uploaded successfully.");
-      }
-
-      setUploadForm({
-        title: "",
-        category: "design",
-        status: "Pending Review",
-        note: "",
-        projectId: "",
-      });
-
-      setEditingUploadId(null);
-
-      if (fileInput) {
-        fileInput.value = "";
-      }
-
-      setRefreshKey((prev) => prev + 1);
-    } catch (error) {
-      console.error("UPLOAD/UPDATE FILE ERROR:", error);
-      alert("Operation failed.");
-    } finally {
-      setUploading(false);
-    }
+  function toggleParticipant(id: number) {
+    setSelectedParticipantIds((prev) => (prev.includes(id) ? [] : [id]));
   }
 
   function handleEditUpload(item: UploadItem) {
@@ -651,68 +649,98 @@ export default function DesignerDashboardPage() {
     });
   }
 
-  async function handleDeleteUpload(id: number) {
+  function handleDeleteUpload(id: number) {
     const confirmed = window.confirm("Are you sure you want to delete this file?");
     if (!confirmed) return;
+    setUploads((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  function handleUploadFile(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const fileInput = document.getElementById("designerFile") as HTMLInputElement | null;
+    const file = fileInput?.files?.[0];
+
+    if (!editingUploadId && !file) {
+      alert("Please choose a file first.");
+      return;
+    }
 
     try {
-      const res = await fetch(`/api/uploads/${id}`, {
-        method: "DELETE",
+      setUploading(true);
+
+      if (editingUploadId) {
+        setUploads((prev) =>
+          prev.map((item) =>
+            item.id === editingUploadId
+              ? {
+                  ...item,
+                  title: uploadForm.title,
+                  category: uploadForm.category,
+                  status: uploadForm.status,
+                  note: uploadForm.note,
+                }
+              : item
+          )
+        );
+      } else {
+        const linkedProject = projects.find(
+          (project) => String(project.id) === uploadForm.projectId
+        );
+
+        const newUpload: UploadItem = {
+          id: Date.now(),
+          title: uploadForm.title,
+          category: uploadForm.category,
+          status: uploadForm.status,
+          note: uploadForm.note,
+          fileUrl: file ? URL.createObjectURL(file) : "#",
+          fileType: file?.type || "FILE",
+          createdAt: new Date().toISOString(),
+          project: linkedProject
+            ? {
+                id: linkedProject.id,
+                name: linkedProject.name,
+                deadline: linkedProject.deadline,
+              }
+            : null,
+        };
+
+        setUploads((prev) => [newUpload, ...prev]);
+      }
+
+      setUploadForm({
+        title: "",
+        category: "design",
+        status: "Pending Review",
+        note: "",
+        projectId: "",
       });
 
-      const data = await res.json();
+      setEditingUploadId(null);
 
-      if (data.success) {
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        alert(data.message || "Delete failed.");
-      }
-    } catch (error) {
-      console.error("DELETE UPLOAD ERROR:", error);
-      alert("Delete failed.");
+      if (fileInput) fileInput.value = "";
+    } finally {
+      setUploading(false);
     }
   }
 
-  async function handleLogout() {
-    try {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        localStorage.removeItem("loggedInUser");
-        window.location.href = "/";
-      } else {
-        alert("Logout failed.");
-      }
-    } catch (error) {
-      console.error("LOGOUT ERROR:", error);
-      alert("Logout failed.");
-    }
+  function handleLogout() {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "/";
   }
 
   const totalProjects = projects.length;
   const totalUploads = uploads.length;
-
   const designUploads = uploads.filter((item) => item.category === "design");
   const videoUploads = uploads.filter((item) => item.category === "video");
-
   const designCount = designUploads.length;
   const videoCount = videoUploads.length;
-
-  const pendingReviewCount = uploads.filter(
-    (item) => item.status === "Pending Review"
-  ).length;
-
+  const pendingReviewCount = uploads.filter((item) => item.status === "Pending Review").length;
   const waitingApprovalCount = uploads.filter(
     (item) => item.status === "Waiting Client Approval"
   ).length;
-
-  const approvedCount = uploads.filter(
-    (item) => item.status === "Approved"
-  ).length;
+  const approvedCount = uploads.filter((item) => item.status === "Approved").length;
 
   const designTasks = designUploads.map((item) => ({
     id: item.id,
@@ -747,44 +775,16 @@ export default function DesignerDashboardPage() {
 
   const notifications = [
     ...(pendingReviewCount > 0
-      ? [
-          {
-            id: 1,
-            title: `${pendingReviewCount} file(s) pending review`,
-            time: "Now",
-            type: "review",
-          },
-        ]
+      ? [{ id: 1, title: `${pendingReviewCount} file(s) pending review`, time: "Now" }]
       : []),
     ...(waitingApprovalCount > 0
-      ? [
-          {
-            id: 2,
-            title: `${waitingApprovalCount} file(s) waiting client approval`,
-            time: "Now",
-            type: "approval",
-          },
-        ]
+      ? [{ id: 2, title: `${waitingApprovalCount} file(s) waiting client approval`, time: "Now" }]
       : []),
     ...(videoCount > 0
-      ? [
-          {
-            id: 3,
-            title: `${videoCount} video file(s) available`,
-            time: "Now",
-            type: "video",
-          },
-        ]
+      ? [{ id: 3, title: `${videoCount} video file(s) available`, time: "Now" }]
       : []),
     ...(projects.length > 0
-      ? [
-          {
-            id: 4,
-            title: `${projects.length} active assigned project(s)`,
-            time: "Now",
-            type: "project",
-          },
-        ]
+      ? [{ id: 4, title: `${projects.length} active assigned project(s)`, time: "Now" }]
       : []),
   ];
 
@@ -798,17 +798,81 @@ export default function DesignerDashboardPage() {
 
   const recentActivities = uploads.slice(0, 4).map((item, index) => ({
     id: item.id,
-    title:
-      item.category === "video"
-        ? "Video file updated"
-        : "Design file updated",
+    title: item.category === "video" ? "Video file updated" : "Design file updated",
     detail: `${item.title} is currently marked as ${item.status}.`,
     time: `${index + 1} hour ago`,
   }));
 
+  const contentCalendarItems = uploads
+    .filter((item) => ["design", "video", "branding"].includes(item.category))
+    .slice(0, 6)
+    .map((item, index) => ({
+      id: item.id,
+      date: new Date(item.createdAt).toLocaleDateString(),
+      platform:
+        index % 3 === 0 ? "Instagram" : index % 3 === 1 ? "Facebook" : "TikTok",
+      contentType: item.category === "video" ? "Video" : "Post",
+      title: item.title,
+      relatedDesign: item.project?.name || "No linked project",
+      publishStatus:
+        item.status === "Approved"
+          ? "Ready"
+          : item.status === "Waiting Client Approval"
+          ? "Pending Approval"
+          : "Planned",
+    }));
+
+  const shootingScheduleItems = projects.slice(0, 6).map((project, index) => ({
+    id: project.id,
+    projectName: project.name,
+    shootingDate: project.deadline,
+    shootingTime: index % 2 === 0 ? "10:00 AM" : "01:30 PM",
+    location: index % 2 === 0 ? "Client Office" : "Outdoor Location",
+    team: "Designer + Photographer + Content Creator",
+    equipment: index % 2 === 0 ? "Camera, Lights, Tripod" : "Camera, Gimbal, Mic",
+    status:
+      project.status === "Completed"
+        ? "Done"
+        : project.status === "In Progress"
+        ? "Confirmed"
+        : "Waiting Client Confirmation",
+  }));
+
+  const adsItems: AdItem[] = projects.map((project, index) => ({
+    id: project.id,
+    campaignName: `${project.name} Ads`,
+    platform:
+      index % 3 === 0
+        ? "Facebook Ads"
+        : index % 3 === 1
+        ? "Instagram Ads"
+        : "Google Ads",
+    budget: `$${(index + 1) * 250}`,
+    startDate: "2026-04-01",
+    endDate: project.deadline,
+    impressions: 12000 + index * 3500,
+    clicks: 520 + index * 80,
+    leads: 35 + index * 6,
+    costPerResult: `$${(4.5 + index * 0.7).toFixed(2)}`,
+  }));
+
+  const reportsItems: ReportItem[] = projects.map((project, index) => ({
+    id: project.id,
+    projectName: project.name,
+    followers: 1000 + index * 450,
+    growth: `${8 + index * 2}%`,
+    engagement: `${4.2 + index * 0.6}%`,
+    bestPost: uploads[index]?.title || "No post yet",
+    adsPerformance: index % 2 === 0 ? "Strong" : "Average",
+    recommendation:
+      index % 2 === 0
+        ? "Increase budget on top-performing visuals."
+        : "Test a stronger CTA and shorter captions.",
+  }));
+
   return (
     <>
-      <div className={styles.page}>
+      <div className={`${styles.page} ${theme === "light" ? styles.lightMode : ""}`}>
         <aside className={styles.sidebar}>
           <div className={styles.brand}>
             <div className={styles.brandLogo}>N</div>
@@ -852,6 +916,38 @@ export default function DesignerDashboardPage() {
             </button>
 
             <button
+              className={activeSection === "content-calendar" ? styles.activeNav : ""}
+              onClick={() => setActiveSection("content-calendar")}
+            >
+              <Clock3 size={18} />
+              Content Calendar
+            </button>
+
+            <button
+              className={activeSection === "shooting-schedule" ? styles.activeNav : ""}
+              onClick={() => setActiveSection("shooting-schedule")}
+            >
+              <ImageIcon size={18} />
+              Shooting Schedule
+            </button>
+
+            <button
+              className={activeSection === "ads-management" ? styles.activeNav : ""}
+              onClick={() => setActiveSection("ads-management")}
+            >
+              <BadgeDollarSign size={18} />
+              Ads Management
+            </button>
+
+            <button
+              className={activeSection === "reports" ? styles.activeNav : ""}
+              onClick={() => setActiveSection("reports")}
+            >
+              <BarChart3 size={18} />
+              Reports
+            </button>
+
+            <button
               className={activeSection === "uploads" ? styles.activeNav : ""}
               onClick={() => setActiveSection("uploads")}
             >
@@ -887,8 +983,8 @@ export default function DesignerDashboardPage() {
           <div className={styles.sidebarCard}>
             <h4>Quick Notes</h4>
             <p>
-              Track design tasks, video stages, approvals, and team notifications
-              from one workspace.
+              Track design tasks, video stages, approvals, content planning,
+              ad campaign details, and reports from one workspace.
             </p>
           </div>
         </aside>
@@ -898,21 +994,32 @@ export default function DesignerDashboardPage() {
             <div>
               <h1>Designer Dashboard</h1>
               <p>
-                Manage projects, upload designs and videos, and chat with the system team in one
-                place.
+                Manage projects, upload designs and videos, follow content
+                planning, and chat with the team in one place.
               </p>
             </div>
 
             <div className={styles.topbarRight}>
-              <button className={styles.alertBtn}>
-                <Bell size={18} />
+              <button className={styles.alertBtn} type="button" aria-label="Notifications">
+                <Bell size={18} strokeWidth={2.2} />
+              </button>
+
+              <button
+                type="button"
+                className={styles.themeToggleBtn}
+                onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              >
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                {theme === "dark" ? "Light Mode" : "Dark Mode"}
               </button>
 
               <div className={styles.profileBox}>
-                <div className={styles.avatar}>S</div>
+                <div className={styles.avatar}>
+                  {currentUser?.name?.charAt(0)?.toUpperCase() || "D"}
+                </div>
                 <div>
-                  <strong>Sara Designer</strong>
-                  <span>designer@nakshet.com</span>
+                  <strong>{currentUser?.name || "Designer"}</strong>
+                  <span>{currentUser?.email || "designer@nakshat.com"}</span>
                 </div>
               </div>
 
@@ -1019,16 +1126,20 @@ export default function DesignerDashboardPage() {
                       </div>
 
                       <div className={styles.cardList}>
-                        {projects.map((project) => (
-                          <div className={styles.infoCard} key={project.id}>
-                            <div>
-                              <h4>{project.name}</h4>
-                              <p>{project.service}</p>
-                              <span>Deadline: {project.deadline}</span>
+                        {projects.length > 0 ? (
+                          projects.map((project) => (
+                            <div className={styles.infoCard} key={project.id}>
+                              <div>
+                                <h4>{project.name}</h4>
+                                <p>{project.service}</p>
+                                <span>Deadline: {project.deadline}</span>
+                              </div>
+                              <strong className={styles.statusBadge}>{project.status}</strong>
                             </div>
-                            <strong className={styles.statusBadge}>{project.status}</strong>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <div className={styles.emptyState}>No projects found.</div>
+                        )}
                       </div>
                     </div>
 
@@ -1038,23 +1149,27 @@ export default function DesignerDashboardPage() {
                       </div>
 
                       <div className={styles.cardList}>
-                        {uploads.slice(0, 5).map((item) => (
-                          <div className={styles.infoCard} key={item.id}>
-                            <div>
-                              <h4>{item.title}</h4>
-                              <p>{item.category}</p>
-                              <span>{new Date(item.createdAt).toLocaleString()}</span>
+                        {uploads.length > 0 ? (
+                          uploads.slice(0, 5).map((item) => (
+                            <div className={styles.infoCard} key={item.id}>
+                              <div>
+                                <h4>{item.title}</h4>
+                                <p>{item.category}</p>
+                                <span>{new Date(item.createdAt).toLocaleString()}</span>
+                              </div>
+                              <a
+                                className={styles.fileLink}
+                                href={item.fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Open
+                              </a>
                             </div>
-                            <a
-                              className={styles.fileLink}
-                              href={item.fileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Open
-                            </a>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <div className={styles.emptyState}>No uploads found.</div>
+                        )}
                       </div>
                     </div>
                   </section>
@@ -1109,6 +1224,66 @@ export default function DesignerDashboardPage() {
                       </div>
                     </div>
                   </section>
+
+                  <section className={styles.doubleGrid}>
+                    <div className={styles.panel}>
+                      <div className={styles.panelHead}>
+                        <h3>Content Calendar</h3>
+                      </div>
+
+                      <div className={styles.cardList}>
+                        {contentCalendarItems.length > 0 ? (
+                          contentCalendarItems.map((item) => (
+                            <div className={styles.infoCard} key={item.id}>
+                              <div>
+                                <h4>{item.title}</h4>
+                                <p>
+                                  {item.platform} • {item.contentType}
+                                </p>
+                                <span>
+                                  {item.date} • {item.relatedDesign}
+                                </span>
+                              </div>
+
+                              <strong className={styles.statusBadge}>
+                                {item.publishStatus}
+                              </strong>
+                            </div>
+                          ))
+                        ) : (
+                          <div className={styles.emptyState}>No content items yet.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className={styles.panel}>
+                      <div className={styles.panelHead}>
+                        <h3>Shooting Schedule</h3>
+                      </div>
+
+                      <div className={styles.cardList}>
+                        {shootingScheduleItems.length > 0 ? (
+                          shootingScheduleItems.map((item) => (
+                            <div className={styles.infoCard} key={item.id}>
+                              <div>
+                                <h4>{item.projectName}</h4>
+                                <p>
+                                  {item.shootingDate} • {item.shootingTime}
+                                </p>
+                                <span>
+                                  {item.location} • {item.equipment}
+                                </span>
+                              </div>
+
+                              <strong className={styles.statusBadge}>{item.status}</strong>
+                            </div>
+                          ))
+                        ) : (
+                          <div className={styles.emptyState}>No shooting schedule yet.</div>
+                        )}
+                      </div>
+                    </div>
+                  </section>
                 </>
               )}
 
@@ -1119,37 +1294,41 @@ export default function DesignerDashboardPage() {
                   </div>
 
                   <div className={styles.projectGrid}>
-                    {projects.map((project) => (
-                      <a
-                        key={project.id}
-                        href={`/designer-dashboard/projects/${project.id}`}
-                        className={styles.projectCard}
-                      >
-                        <div className={styles.projectTop}>
-                          <h4>{project.name}</h4>
-                          <span className={styles.statusBadge}>{project.status}</span>
-                        </div>
+                    {projects.length > 0 ? (
+                      projects.map((project) => (
+                        <a
+                          key={project.id}
+                          href={`/designer-dashboard/projects/${project.id}`}
+                          className={styles.projectCard}
+                        >
+                          <div className={styles.projectTop}>
+                            <h4>{project.name}</h4>
+                            <span className={styles.statusBadge}>{project.status}</span>
+                          </div>
 
-                        <p>
-                          <strong>Service:</strong> {project.service}
-                        </p>
-                        <p>
-                          <strong>Owner:</strong> {project.owner.name}
-                        </p>
-                        <p>
-                          <strong>Deadline:</strong> {project.deadline}
-                        </p>
+                          <p>
+                            <strong>Service:</strong> {project.service}
+                          </p>
+                          <p>
+                            <strong>Owner:</strong> {project.owner.name}
+                          </p>
+                          <p>
+                            <strong>Deadline:</strong> {project.deadline}
+                          </p>
 
-                        <div className={styles.projectMeta}>
-                          <span>
-                            <Clock3 size={14} /> Ongoing work
-                          </span>
-                          <span>
-                            <CheckCircle2 size={14} /> {project.uploads.length} files
-                          </span>
-                        </div>
-                      </a>
-                    ))}
+                          <div className={styles.projectMeta}>
+                            <span>
+                              <Clock3 size={14} /> Ongoing work
+                            </span>
+                            <span>
+                              <CheckCircle2 size={14} /> {project.uploads.length} files
+                            </span>
+                          </div>
+                        </a>
+                      ))
+                    ) : (
+                      <div className={styles.emptyState}>No assigned projects.</div>
+                    )}
                   </div>
                 </section>
               )}
@@ -1224,6 +1403,168 @@ export default function DesignerDashboardPage() {
                       ))
                     ) : (
                       <div className={styles.emptyState}>No video files uploaded yet.</div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {activeSection === "content-calendar" && (
+                <section className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <h3>Content Calendar</h3>
+                  </div>
+
+                  <div className={styles.projectGrid}>
+                    {contentCalendarItems.length > 0 ? (
+                      contentCalendarItems.map((item) => (
+                        <div key={item.id} className={styles.projectCard}>
+                          <div className={styles.projectTop}>
+                            <h4>{item.title}</h4>
+                            <span className={styles.statusBadge}>{item.publishStatus}</span>
+                          </div>
+
+                          <p>
+                            <strong>Date:</strong> {item.date}
+                          </p>
+                          <p>
+                            <strong>Platform:</strong> {item.platform}
+                          </p>
+                          <p>
+                            <strong>Content Type:</strong> {item.contentType}
+                          </p>
+                          <p>
+                            <strong>Related Project:</strong> {item.relatedDesign}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={styles.emptyState}>No content items yet.</div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {activeSection === "shooting-schedule" && (
+                <section className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <h3>Shooting Schedule</h3>
+                  </div>
+
+                  <div className={styles.projectGrid}>
+                    {shootingScheduleItems.length > 0 ? (
+                      shootingScheduleItems.map((item) => (
+                        <div key={item.id} className={styles.projectCard}>
+                          <div className={styles.projectTop}>
+                            <h4>{item.projectName}</h4>
+                            <span className={styles.statusBadge}>{item.status}</span>
+                          </div>
+
+                          <p>
+                            <strong>Date:</strong> {item.shootingDate}
+                          </p>
+                          <p>
+                            <strong>Time:</strong> {item.shootingTime}
+                          </p>
+                          <p>
+                            <strong>Location:</strong> {item.location}
+                          </p>
+                          <p>
+                            <strong>Team:</strong> {item.team}
+                          </p>
+                          <p>
+                            <strong>Equipment:</strong> {item.equipment}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={styles.emptyState}>No shooting schedule yet.</div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {activeSection === "ads-management" && (
+                <section className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <h3>Ads Management</h3>
+                  </div>
+
+                  <div className={styles.projectGrid}>
+                    {adsItems.length > 0 ? (
+                      adsItems.map((ad) => (
+                        <div key={ad.id} className={styles.projectCard}>
+                          <div className={styles.projectTop}>
+                            <h4>{ad.campaignName}</h4>
+                            <span className={styles.statusBadge}>{ad.platform}</span>
+                          </div>
+
+                          <p>
+                            <strong>Budget:</strong> {ad.budget}
+                          </p>
+                          <p>
+                            <strong>Start Date:</strong> {ad.startDate}
+                          </p>
+                          <p>
+                            <strong>End Date:</strong> {ad.endDate}
+                          </p>
+                          <p>
+                            <strong>Impressions:</strong> {ad.impressions}
+                          </p>
+                          <p>
+                            <strong>Clicks:</strong> {ad.clicks}
+                          </p>
+                          <p>
+                            <strong>Leads:</strong> {ad.leads}
+                          </p>
+                          <p>
+                            <strong>Cost Per Result:</strong> {ad.costPerResult}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={styles.emptyState}>No ad campaigns yet.</div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {activeSection === "reports" && (
+                <section className={styles.panel}>
+                  <div className={styles.panelHead}>
+                    <h3>Reports</h3>
+                  </div>
+
+                  <div className={styles.projectGrid}>
+                    {reportsItems.length > 0 ? (
+                      reportsItems.map((report) => (
+                        <div key={report.id} className={styles.projectCard}>
+                          <div className={styles.projectTop}>
+                            <h4>{report.projectName}</h4>
+                            <span className={styles.statusBadge}>{report.adsPerformance}</span>
+                          </div>
+
+                          <p>
+                            <strong>Followers:</strong> {report.followers}
+                          </p>
+                          <p>
+                            <strong>Growth:</strong> {report.growth}
+                          </p>
+                          <p>
+                            <strong>Engagement:</strong> {report.engagement}
+                          </p>
+                          <p>
+                            <strong>Best Post:</strong> {report.bestPost}
+                          </p>
+                          <p>
+                            <strong>Ads Performance:</strong> {report.adsPerformance}
+                          </p>
+                          <p>
+                            <strong>Recommendation:</strong> {report.recommendation}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={styles.emptyState}>No reports yet.</div>
                     )}
                   </div>
                 </section>
@@ -1331,44 +1672,48 @@ export default function DesignerDashboardPage() {
                     </div>
 
                     <div className={styles.cardList}>
-                      {uploads.map((item) => (
-                        <div className={styles.uploadCard} key={item.id}>
-                          <div className={styles.uploadInfo}>
-                            <h4>{item.title}</h4>
-                            <p>
-                              {item.category} • {item.status}
-                            </p>
-                            <span>{item.project?.name || "No project linked"}</span>
+                      {uploads.length > 0 ? (
+                        uploads.map((item) => (
+                          <div className={styles.uploadCard} key={item.id}>
+                            <div className={styles.uploadInfo}>
+                              <h4>{item.title}</h4>
+                              <p>
+                                {item.category} • {item.status}
+                              </p>
+                              <span>{item.project?.name || "No project linked"}</span>
+                            </div>
+
+                            <div className={styles.uploadActions}>
+                              <a
+                                href={item.fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.fileLink}
+                              >
+                                View
+                              </a>
+
+                              <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => handleEditUpload(item)}
+                              >
+                                <Pencil size={16} />
+                              </button>
+
+                              <button
+                                type="button"
+                                className={styles.deleteBtn}
+                                onClick={() => handleDeleteUpload(item.id)}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
-
-                          <div className={styles.uploadActions}>
-                            <a
-                              href={item.fileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={styles.fileLink}
-                            >
-                              View
-                            </a>
-
-                            <button
-                              type="button"
-                              className={styles.actionBtn}
-                              onClick={() => handleEditUpload(item)}
-                            >
-                              <Pencil size={16} />
-                            </button>
-
-                            <button
-                              type="button"
-                              className={styles.deleteBtn}
-                              onClick={() => handleDeleteUpload(item.id)}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <div className={styles.emptyState}>No files uploaded yet.</div>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -1392,7 +1737,7 @@ export default function DesignerDashboardPage() {
                       <Search size={16} />
                       <input
                         type="text"
-                        placeholder="Search by chat, project, or person..."
+                        placeholder="Search by chat, project, or person."
                         value={conversationSearch}
                         onChange={(e) => setConversationSearch(e.target.value)}
                       />
@@ -1402,6 +1747,7 @@ export default function DesignerDashboardPage() {
                       {filteredConversations.length > 0 ? (
                         filteredConversations.map((chat) => {
                           const lastMessage = getLastMessage(chat);
+                          const displayName = getChatDisplayName(chat, currentUser?.id);
 
                           return (
                             <button
@@ -1412,12 +1758,12 @@ export default function DesignerDashboardPage() {
                               onClick={() => setSelectedConversationId(chat.id)}
                             >
                               <div className={styles.chatListTop}>
-                                <strong>{chat.title}</strong>
+                                <strong>{displayName}</strong>
                                 <span className={styles.chatTime}>{lastMessage.time}</span>
                               </div>
 
                               <p className={styles.chatProjectName}>
-                                {chat.project?.name || "General conversation"}
+                                {chat.project?.name || "Direct chat"}
                               </p>
 
                               <span className={styles.chatPreviewText}>
@@ -1427,9 +1773,7 @@ export default function DesignerDashboardPage() {
                           );
                         })
                       ) : (
-                        <div className={styles.noSearchResults}>
-                          No conversation found.
-                        </div>
+                        <div className={styles.noSearchResults}>No conversation found.</div>
                       )}
                     </div>
                   </div>
@@ -1440,180 +1784,439 @@ export default function DesignerDashboardPage() {
                         <div className={styles.chatHeader}>
                           <div className={styles.chatHeaderTop}>
                             <div>
-                              <h3>{selectedConversation.title}</h3>
-                              <p>{selectedConversation.project?.name || "No project selected"}</p>
+                              <h3>
+                                {getChatDisplayName(selectedConversation, currentUser?.id)}
+                              </h3>
+                              <p>{selectedConversation.project?.name || "Direct chat"}</p>
                             </div>
 
                             <button
                               className={styles.deleteChatBtn}
-                              onClick={handleDeleteChat}
+                              onClick={async () => {
+                                if (!selectedConversationId || !currentUser) return;
+
+                                const confirmed = window.confirm(
+                                  "Are you sure you want to delete this chat?"
+                                );
+                                if (!confirmed) return;
+
+                                try {
+                                  setDeletingChat(true);
+
+                                  const res = await fetch("/api/chat/delete", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      conversationId: selectedConversationId,
+                                      userId: currentUser.id,
+                                    }),
+                                  });
+
+                                  const data = await res.json().catch(() => ({
+                                    success: false,
+                                  }));
+
+                                  if (!data.success) {
+                                    alert(data.message || "Failed to delete chat.");
+                                    return;
+                                  }
+
+                                  await loadData(currentUser.id);
+                                } catch (error) {
+                                  console.error("DELETE CHAT ERROR:", error);
+                                  alert("Failed to delete chat.");
+                                } finally {
+                                  setDeletingChat(false);
+                                }
+                              }}
                               disabled={deletingChat}
                             >
                               <Trash2 size={16} />
-                              {deletingChat ? "Deleting..." : "Delete Chat"}
+                              {deletingChat ? "Deleting..." : "Delete"}
                             </button>
                           </div>
 
                           <div className={styles.membersRow}>
-                            <Users size={15} />
+                            <Users size={16} />
                             <div className={styles.membersList}>
-                              {selectedConversation.members.map((member) => {
-                                const isYou = member.user.id === DEMO_DESIGNER_ID;
-
-                                return (
-                                  <span key={member.id} className={styles.memberBadge}>
-                                    {isYou ? "You" : member.user.name} • {member.user.role}
-                                  </span>
-                                );
-                              })}
+                              {selectedConversation.members.map((member) => (
+                                <span key={member.id} className={styles.memberBadge}>
+                                  {member.user.name}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         </div>
 
                         <div className={styles.messageArea} ref={messageAreaRef}>
-                          {selectedConversation.messages.map((msg) => {
-                            const mine = msg.sender.id === DEMO_DESIGNER_ID;
-                            const parsed = parseMessageContent(msg.text);
+                          {selectedConversation.messages.length > 0 ? (
+                            selectedConversation.messages.map((message) => {
+                              const parsed = parseMessageContent(message.text);
+                              const isMine = message.sender.id === currentUser?.id;
 
-                            return (
-                              <div
-                                key={msg.id}
-                                className={`${styles.messageBubble} ${
-                                  mine ? styles.myMessage : styles.theirMessage
-                                }`}
-                              >
-                                <strong>{mine ? "You" : msg.sender.name}</strong>
+                              return (
+                                <div
+                                  key={message.id}
+                                  className={`${styles.messageBubble} ${
+                                    isMine ? styles.myMessage : styles.theirMessage
+                                  }`}
+                                >
+                                  <strong>{message.sender.name}</strong>
 
-                                {editingMessageId === msg.id ? (
-                                  <div className={styles.editMessageBox}>
-                                    <input
-                                      type="text"
-                                      value={editingMessageText}
-                                      onChange={(e) => setEditingMessageText(e.target.value)}
-                                    />
-                                    <div className={styles.editMessageActions}>
-                                      <button onClick={() => handleEditMessage(msg.id)}>
-                                        Save
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setEditingMessageId(null);
-                                          setEditingMessageText("");
+                                  {editingMessageId === message.id ? (
+                                    <>
+                                      <input
+                                        value={editingMessageText}
+                                        onChange={(e) => setEditingMessageText(e.target.value)}
+                                        style={{
+                                          width: "100%",
+                                          marginBottom: "10px",
+                                          padding: "10px",
+                                          borderRadius: "10px",
+                                          border: "none",
+                                        }}
+                                      />
+
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          gap: "8px",
+                                          marginBottom: "8px",
                                         }}
                                       >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : parsed.kind === "media" ? (
-                                  <div className={styles.mediaMessageBox}>
-                                    {parsed.mediaType === "image" ? (
-                                      <img
-                                        src={parsed.url}
-                                        alt="chat media"
-                                        className={styles.chatMediaImage}
-                                      />
-                                    ) : (
-                                      <video
-                                        src={parsed.url}
-                                        controls
-                                        className={styles.chatMediaVideo}
-                                      />
-                                    )}
+                                        <button
+                                          type="button"
+                                          className={styles.actionBtn}
+                                          onClick={async () => {
+                                            if (!editingMessageText.trim() || !currentUser) return;
 
-                                    {parsed.caption ? (
-                                      <p className={styles.mediaCaption}>{parsed.caption}</p>
-                                    ) : null}
-                                  </div>
-                                ) : (
-                                  <p>{parsed.text}</p>
-                                )}
+                                            try {
+                                              const res = await fetch("/api/chat/messages", {
+                                                method: "PATCH",
+                                                headers: {
+                                                  "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                  messageId: message.id,
+                                                  text: editingMessageText,
+                                                  userId: currentUser.id,
+                                                }),
+                                              });
 
-                                <span>{new Date(msg.createdAt).toLocaleString()}</span>
+                                              const data = await res.json().catch(() => ({
+                                                success: false,
+                                              }));
 
-                                {mine && editingMessageId !== msg.id ? (
-                                  <div className={styles.messageActions}>
-                                    {parsed.kind === "text" ? (
-                                      <button
-                                        onClick={() => {
-                                          setEditingMessageId(msg.id);
-                                          setEditingMessageText(parsed.text || "");
-                                        }}
-                                      >
-                                        Edit
-                                      </button>
-                                    ) : null}
-                                    <button onClick={() => handleDeleteMessage(msg.id)}>
-                                      Delete
-                                    </button>
-                                  </div>
-                                ) : null}
-                              </div>
-                            );
-                          })}
+                                              if (!data.success) {
+                                                alert(data.message || "Failed to update message.");
+                                                return;
+                                              }
+
+                                              setEditingMessageId(null);
+                                              setEditingMessageText("");
+                                              await loadData(currentUser.id);
+                                            } catch (error) {
+                                              console.error("EDIT MESSAGE ERROR:", error);
+                                              alert("Failed to update message.");
+                                            }
+                                          }}
+                                        >
+                                          <CheckCircle2 size={15} />
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          className={styles.deleteBtn}
+                                          onClick={() => {
+                                            setEditingMessageId(null);
+                                            setEditingMessageText("");
+                                          }}
+                                        >
+                                          <X size={15} />
+                                        </button>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      {parsed.kind === "media" ? (
+                                        <>
+                                          {parsed.mediaType === "image" ? (
+                                            <img
+                                              src={parsed.url}
+                                              alt="Chat media"
+                                              className={styles.chatMediaImage}
+                                            />
+                                          ) : (
+                                            <video
+                                              src={parsed.url}
+                                              controls
+                                              className={styles.chatMediaVideo}
+                                            />
+                                          )}
+
+                                          {parsed.caption && <p>{parsed.caption}</p>}
+                                        </>
+                                      ) : (
+                                        <p>{parsed.text}</p>
+                                      )}
+
+                                      <span>{new Date(message.createdAt).toLocaleString()}</span>
+
+                                      {isMine && (
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            gap: "8px",
+                                            marginTop: "10px",
+                                          }}
+                                        >
+                                          {parsed.kind === "text" && (
+                                            <button
+                                              type="button"
+                                              className={styles.actionBtn}
+                                              onClick={() => {
+                                                setEditingMessageId(message.id);
+                                                setEditingMessageText(parsed.text || "");
+                                              }}
+                                            >
+                                              <Pencil size={15} />
+                                            </button>
+                                          )}
+
+                                          <button
+                                            type="button"
+                                            className={styles.deleteBtn}
+                                            onClick={async () => {
+                                              if (!currentUser) return;
+
+                                              const confirmed = window.confirm(
+                                                "Delete this message?"
+                                              );
+                                              if (!confirmed) return;
+
+                                              try {
+                                                const res = await fetch("/api/chat/messages", {
+                                                  method: "DELETE",
+                                                  headers: {
+                                                    "Content-Type": "application/json",
+                                                  },
+                                                  body: JSON.stringify({
+                                                    messageId: message.id,
+                                                    userId: currentUser.id,
+                                                  }),
+                                                });
+
+                                                const data = await res.json().catch(() => ({
+                                                  success: false,
+                                                }));
+
+                                                if (!data.success) {
+                                                  alert(data.message || "Failed to delete message.");
+                                                  return;
+                                                }
+
+                                                await loadData(currentUser.id);
+                                              } catch (error) {
+                                                console.error("DELETE MESSAGE ERROR:", error);
+                                                alert("Failed to delete message.");
+                                              }
+                                            }}
+                                          >
+                                            <Trash2 size={15} />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className={styles.emptyState}>No messages yet.</div>
+                          )}
                         </div>
 
-                        <div className={styles.chatToolsRow}>
+                        {showEmojiBar && (
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              flexWrap: "wrap",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            {EMOJIS.map((emoji) => (
+                              <button
+                                key={emoji}
+                                type="button"
+                                onClick={() => setMessageText((prev) => prev + emoji)}
+                                className={styles.actionBtn}
+                                style={{ width: "42px", height: "42px" }}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className={styles.messageComposer}>
+                          <input
+                            type="text"
+                            placeholder="Type your message."
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            onKeyDown={async (e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+
+                                if (!messageText.trim() || !selectedConversationId || !currentUser) {
+                                  return;
+                                }
+
+                                try {
+                                  const res = await fetch("/api/chat/messages", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      conversationId: selectedConversationId,
+                                      userId: currentUser.id,
+                                      text: messageText,
+                                    }),
+                                  });
+
+                                  const data = await res.json().catch(() => ({
+                                    success: false,
+                                  }));
+
+                                  if (!data.success) {
+                                    alert(data.message || "Failed to send message.");
+                                    return;
+                                  }
+
+                                  setMessageText("");
+                                  setShowEmojiBar(false);
+                                  await loadData(currentUser.id);
+                                } catch (error) {
+                                  console.error("SEND MESSAGE ERROR:", error);
+                                  alert("Failed to send message.");
+                                }
+                              }
+                            }}
+                          />
+
                           <button
-                            className={styles.toolBtn}
                             type="button"
                             onClick={() => setShowEmojiBar((prev) => !prev)}
                           >
                             <Smile size={16} />
-                            Emoji
                           </button>
 
                           <button
-                            className={styles.toolBtn}
                             type="button"
                             onClick={() => mediaInputRef.current?.click()}
+                            disabled={sendingMedia}
                           >
                             <Paperclip size={16} />
-                            Media
                           </button>
 
                           <input
                             ref={mediaInputRef}
                             type="file"
                             accept="image/*,video/*"
-                            className={styles.hiddenInput}
-                            onChange={(e) => {
+                            style={{ display: "none" }}
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
-                              if (file) {
-                                handleMediaUpload(file);
+                              if (!file || !selectedConversationId || !currentUser) return;
+
+                              try {
+                                setSendingMedia(true);
+
+                                const payload = `__CHAT_MEDIA__${JSON.stringify({
+                                  mediaType: file.type.startsWith("video") ? "video" : "image",
+                                  url: URL.createObjectURL(file),
+                                  caption: messageText,
+                                })}`;
+
+                                const res = await fetch("/api/chat/messages", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    conversationId: selectedConversationId,
+                                    userId: currentUser.id,
+                                    text: payload,
+                                  }),
+                                });
+
+                                const data = await res.json().catch(() => ({
+                                  success: false,
+                                }));
+
+                                if (!data.success) {
+                                  alert(data.message || "Failed to upload chat media.");
+                                  return;
+                                }
+
+                                setMessageText("");
+                                setShowEmojiBar(false);
+
+                                if (mediaInputRef.current) {
+                                  mediaInputRef.current.value = "";
+                                }
+
+                                await loadData(currentUser.id);
+                              } catch (error) {
+                                console.error("SEND MEDIA ERROR:", error);
+                                alert("Failed to upload chat media.");
+                              } finally {
+                                setSendingMedia(false);
                               }
                             }}
                           />
-                        </div>
 
-                        {showEmojiBar ? (
-                          <div className={styles.emojiBar}>
-                            {EMOJIS.map((emoji) => (
-                              <button
-                                key={emoji}
-                                type="button"
-                                onClick={() => setMessageText((prev) => prev + emoji)}
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        ) : null}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!messageText.trim() || !selectedConversationId || !currentUser) {
+                                return;
+                              }
 
-                        <div className={styles.messageComposer}>
-                          <input
-                            type="text"
-                            placeholder="Type your message or add caption..."
-                            value={messageText}
-                            onChange={(e) => setMessageText(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                handleSendMessage();
+                              try {
+                                const res = await fetch("/api/chat/messages", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    conversationId: selectedConversationId,
+                                    userId: currentUser.id,
+                                    text: messageText,
+                                  }),
+                                });
+
+                                const data = await res.json().catch(() => ({
+                                  success: false,
+                                }));
+
+                                if (!data.success) {
+                                  alert(data.message || "Failed to send message.");
+                                  return;
+                                }
+
+                                setMessageText("");
+                                setShowEmojiBar(false);
+                                await loadData(currentUser.id);
+                              } catch (error) {
+                                console.error("SEND MESSAGE ERROR:", error);
+                                alert("Failed to send message.");
                               }
                             }}
-                          />
-                          <button onClick={handleSendMessage} disabled={sendingMedia}>
+                          >
                             <Send size={16} />
                             Send
                           </button>
@@ -1629,23 +2232,28 @@ export default function DesignerDashboardPage() {
               {activeSection === "approvals" && (
                 <section className={styles.panel}>
                   <div className={styles.panelHead}>
-                    <h3>Approvals & Reviews</h3>
+                    <h3>Approvals Center</h3>
                   </div>
 
-                  <div className={styles.cardList}>
+                  <div className={styles.projectGrid}>
                     {approvalItems.length > 0 ? (
                       approvalItems.map((item) => (
-                        <div className={styles.infoCard} key={item.id}>
-                          <div>
+                        <div key={item.id} className={styles.projectCard}>
+                          <div className={styles.projectTop}>
                             <h4>{item.itemName}</h4>
-                            <p>{item.type}</p>
-                            <span>{item.feedback}</span>
+                            <span className={styles.statusBadge}>{item.status}</span>
                           </div>
-                          <strong className={styles.statusBadge}>{item.status}</strong>
+
+                          <p>
+                            <strong>Type:</strong> {item.type}
+                          </p>
+                          <p>
+                            <strong>Feedback:</strong> {item.feedback}
+                          </p>
                         </div>
                       ))
                     ) : (
-                      <div className={styles.emptyState}>No approval items yet.</div>
+                      <div className={styles.emptyState}>No approvals yet.</div>
                     )}
                   </div>
                 </section>
@@ -1659,14 +2267,13 @@ export default function DesignerDashboardPage() {
 
                   <div className={styles.cardList}>
                     {notifications.length > 0 ? (
-                      notifications.map((note) => (
-                        <div className={styles.infoCard} key={note.id}>
+                      notifications.map((item) => (
+                        <div key={item.id} className={styles.activityCard}>
+                          <div className={styles.activityDot}></div>
                           <div>
-                            <h4>{note.title}</h4>
-                            <p>{note.type}</p>
-                            <span>{note.time}</span>
+                            <h4>{item.title}</h4>
+                            <span>{item.time}</span>
                           </div>
-                          <strong className={styles.statusBadge}>New</strong>
                         </div>
                       ))
                     ) : (
@@ -1684,8 +2291,9 @@ export default function DesignerDashboardPage() {
         <div className={styles.modalOverlay}>
           <div className={styles.modalCard}>
             <div className={styles.modalHead}>
-              <h3>Create New Chat</h3>
+              <h3>Start New Chat</h3>
               <button
+                type="button"
                 className={styles.modalCloseBtn}
                 onClick={() => setShowCreateChatModal(false)}
               >
@@ -1694,14 +2302,45 @@ export default function DesignerDashboardPage() {
             </div>
 
             <div className={styles.modalBody}>
-              <input
-                type="text"
-                placeholder="Chat title"
-                value={createChatForm.title}
-                onChange={(e) =>
-                  setCreateChatForm({ ...createChatForm, title: e.target.value })
-                }
-              />
+              <div className={styles.panel}>
+                <div className={styles.panelHead}>
+                  <h3>Choose Person</h3>
+                </div>
+
+                {participantsLoading ? (
+                  <div className={styles.loading}>Loading people...</div>
+                ) : availableParticipants.length > 0 ? (
+                  <div className={styles.cardList}>
+                    {availableParticipants.map((participant) => (
+                      <label
+                        key={participant.id}
+                        className={styles.infoCard}
+                        style={{
+                          cursor: "pointer",
+                          border: selectedParticipantIds.includes(participant.id)
+                            ? "1px solid rgba(110, 168, 254, 0.8)"
+                            : undefined,
+                        }}
+                      >
+                        <div>
+                          <h4>{participant.name}</h4>
+                          <p>{participant.email}</p>
+                          <span>{participant.role}</span>
+                        </div>
+
+                        <input
+                          type="radio"
+                          name="chat-user"
+                          checked={selectedParticipantIds.includes(participant.id)}
+                          onChange={() => toggleParticipant(participant.id)}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>No participants available.</div>
+                )}
+              </div>
 
               <select
                 value={createChatForm.projectId}
@@ -1709,7 +2348,7 @@ export default function DesignerDashboardPage() {
                   setCreateChatForm({ ...createChatForm, projectId: e.target.value })
                 }
               >
-                <option value="">Select project</option>
+                <option value="">Without project</option>
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
@@ -1717,52 +2356,19 @@ export default function DesignerDashboardPage() {
                 ))}
               </select>
 
-              <div className={styles.participantsBox}>
-                <h4>Select Participants</h4>
+              <div className={styles.formActions}>
+                <button type="button" onClick={handleCreateChat} disabled={creatingChat}>
+                  {creatingChat ? "Creating..." : "Start Chat"}
+                </button>
 
-                {participantsLoading ? (
-                  <div className={styles.participantsLoading}>Loading participants...</div>
-                ) : availableParticipants.length > 0 ? (
-                  <div className={styles.participantsList}>
-                    {availableParticipants.map((participant) => (
-                      <label key={participant.id} className={styles.participantItem}>
-                        <input
-                          type="checkbox"
-                          checked={selectedParticipantIds.includes(participant.id)}
-                          onChange={() => toggleParticipant(participant.id)}
-                        />
-                        <div>
-                          <strong>{participant.name}</strong>
-                          <span>
-                            {participant.email} • {participant.role}
-                          </span>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.participantsLoading}>
-                    Select a project first.
-                  </div>
-                )}
+                <button
+                  type="button"
+                  className={styles.cancelBtn}
+                  onClick={() => setShowCreateChatModal(false)}
+                >
+                  Cancel
+                </button>
               </div>
-            </div>
-
-            <div className={styles.modalActions}>
-              <button
-                className={styles.modalCancelBtn}
-                onClick={() => setShowCreateChatModal(false)}
-              >
-                Cancel
-              </button>
-
-              <button
-                className={styles.modalCreateBtn}
-                onClick={handleCreateChat}
-                disabled={creatingChat}
-              >
-                {creatingChat ? "Creating..." : "Create Chat"}
-              </button>
             </div>
           </div>
         </div>
