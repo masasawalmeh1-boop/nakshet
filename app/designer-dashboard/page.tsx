@@ -489,6 +489,23 @@ export default function DesignerDashboardPage() {
   }, [selectedConversationId]);
 
   useEffect(() => {
+    if (!currentUser?.id) return;
+    
+    const interval = setInterval(() => {
+      fetch(`/api/chat/conversations?userId=${currentUser.id}`, { cache: "no-store" })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.conversations) {
+            setConversations(data.conversations);
+          }
+        })
+        .catch(err => console.error("Polling error", err));
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  useEffect(() => {
     async function loadParticipants() {
       if (!currentUser?.id || !showCreateChatModal) {
         return;
@@ -624,6 +641,11 @@ export default function DesignerDashboardPage() {
       setShowCreateChatModal(false);
       setCreateChatForm({ title: "", projectId: "" });
       setSelectedParticipantIds([]);
+      
+      if (data.chat?.id) {
+        setSelectedConversationId(data.chat.id);
+      }
+      
       await loadData(currentUser.id);
     } catch (error) {
       console.error("CREATE CHAT ERROR:", error);
@@ -2135,22 +2157,17 @@ export default function DesignerDashboardPage() {
                               try {
                                 setSendingMedia(true);
 
-                                const payload = `__CHAT_MEDIA__${JSON.stringify({
-                                  mediaType: file.type.startsWith("video") ? "video" : "image",
-                                  url: URL.createObjectURL(file),
-                                  caption: messageText,
-                                })}`;
+                                const formData = new FormData();
+                                formData.append("conversationId", String(selectedConversationId));
+                                formData.append("senderId", String(currentUser.id));
+                                formData.append("file", file);
+                                if (messageText.trim()) {
+                                  formData.append("text", messageText);
+                                }
 
-                                const res = await fetch("/api/chat/messages", {
+                                const res = await fetch("/api/chat/send", {
                                   method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                  },
-                                  body: JSON.stringify({
-                                    conversationId: selectedConversationId,
-                                    userId: currentUser.id,
-                                    text: payload,
-                                  }),
+                                  body: formData,
                                 });
 
                                 const data = await res.json().catch(() => ({

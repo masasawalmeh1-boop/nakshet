@@ -6,17 +6,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const title = String(body.title || "").trim();
-    const projectId = Number(body.projectId);
+    const projectId = body.projectId ? Number(body.projectId) : null;
     const creatorId = Number(body.creatorId);
     const participantIds = Array.isArray(body.participantIds)
       ? body.participantIds.map((id: unknown) => Number(id)).filter(Boolean)
       : [];
 
-    if (!title || !projectId || !creatorId) {
+    if (!title || !creatorId) {
       return NextResponse.json(
         {
           success: false,
-          message: "title, projectId, and creatorId are required.",
+          message: "title and creatorId are required.",
         },
         { status: 400 }
       );
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const chat = await prisma.chat.create({
       data: {
         title,
-        projectId,
+        projectId: projectId || null,
         participants: {
           create: uniqueParticipantIds.map((userId) => ({
             userId,

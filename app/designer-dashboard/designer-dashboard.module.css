@@ -661,6 +661,9 @@
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  background-color: #0b141a; /* WhatsApp dark mode background */
+  background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); /* subtle texture */
+  border-radius: 24px;
 }
 
 .chatHeader {
@@ -737,8 +740,10 @@
 
 .messageBubble {
   max-width: 72%;
-  border-radius: 18px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  position: relative;
+  box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.2);
 }
 
 .messageBubble strong {
@@ -759,13 +764,16 @@
 
 .myMessage {
   align-self: flex-end;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #005c4b; /* WhatsApp dark mode green */
+  color: #e9edef;
+  border-top-right-radius: 0px;
 }
 
 .theirMessage {
   align-self: flex-start;
-  background: #0d1626;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #202c33; /* WhatsApp dark mode gray */
+  color: #e9edef;
+  border-top-left-radius: 0px;
 }
 
 .chatMediaImage {
