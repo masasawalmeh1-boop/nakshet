@@ -13,27 +13,47 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const uploads = await prisma.upload.findMany({
+    const projects = await prisma.project.findMany({
       where: {
         designerId,
       },
       include: {
-        project: true,
+        client: true,
+        uploads: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 5,
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
+    const formattedProjects = projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      service: project.service,
+      status: project.status,
+      deadline: project.deadline,
+      owner: {
+        id: project.client?.id || 0,
+        name: project.client?.name || "No Client",
+        email: project.client?.email || "no-client@nakshet.com",
+      },
+      uploads: project.uploads,
+    }));
+
     return NextResponse.json({
       success: true,
-      uploads,
+      projects: formattedProjects,
     });
   } catch (error) {
-    console.error("GET UPLOADS ERROR:", error);
+    console.error("DESIGNER PROJECTS ERROR:", error);
 
     return NextResponse.json(
-      { success: false, message: "Failed to load uploads." },
+      { success: false, message: "Failed to load designer projects." },
       { status: 500 }
     );
   }
