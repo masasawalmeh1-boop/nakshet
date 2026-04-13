@@ -22,10 +22,6 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-<<<<<<< HEAD
-        client: true,
-        uploads: true,
-=======
         user: true,
         uploads: {
           orderBy: {
@@ -33,14 +29,12 @@ export async function GET(request: NextRequest) {
           },
           take: 5,
         },
->>>>>>> 1edc76ccac6c6e5592be0f6009150cf22483fc68
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-<<<<<<< HEAD
     const formattedProjects = projects.map((project) => ({
       id: project.id,
       name: project.name,
@@ -48,9 +42,9 @@ export async function GET(request: NextRequest) {
       status: project.status,
       deadline: project.deadline,
       owner: {
-        id: project.client?.id || 0,
-        name: project.client?.name || "No Client",
-        email: project.client?.email || "no-client@nakshet.com",
+        id: project.user?.id || 0,
+        name: project.user?.name || "No Client",
+        email: project.user?.email || "no-client@nakshet.com",
       },
       uploads: project.uploads,
     }));
@@ -58,11 +52,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       projects: formattedProjects,
-=======
-    return NextResponse.json({
-      success: true,
-      projects,
->>>>>>> 1edc76ccac6c6e5592be0f6009150cf22483fc68
     });
   } catch (error) {
     console.error("DESIGNER PROJECTS ERROR:", error);
