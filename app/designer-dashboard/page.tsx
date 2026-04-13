@@ -603,62 +603,62 @@ export default function DesignerDashboardPage() {
     return () => clearTimeout(timeout);
   }, [activeSection, selectedConversationId, selectedConversation?.messages.length, conversations]);
 
-  async function handleCreateChat() {
-    if (!currentUser || selectedParticipantIds.length === 0) {
-      alert("Please choose a person first.");
+ async function handleCreateChat() {
+  if (!currentUser || selectedParticipantIds.length === 0) {
+    alert("Please choose at least one person.");
+    return;
+  }
+
+  const isGroup = selectedParticipantIds.length > 1;
+
+  try {
+    setCreatingChat(true);
+
+    const payload = {
+      title: isGroup ? createChatForm.title.trim() || "New Group" : "",
+      projectId: createChatForm.projectId ? Number(createChatForm.projectId) : null,
+      creatorId: currentUser.id,
+      participantIds: selectedParticipantIds,
+    };
+
+    const res = await fetch("/api/chat/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json().catch(() => ({ success: false }));
+
+    if (!data.success) {
+      alert(data.message || "Failed to create chat.");
       return;
     }
 
-    const selectedUser = availableParticipants.find(
-      (item) => item.id === selectedParticipantIds[0]
-    );
+    setShowCreateChatModal(false);
+    setCreateChatForm({ title: "", projectId: "" });
+    setSelectedParticipantIds([]);
 
-    try {
-      setCreatingChat(true);
+    await loadData(currentUser.id);
 
-      const payload = {
-        title: selectedUser?.name || createChatForm.title || "New Chat",
-        projectId: createChatForm.projectId ? Number(createChatForm.projectId) : null,
-        creatorId: currentUser.id,
-        participantIds: selectedParticipantIds,
-      };
-
-      const res = await fetch("/api/chat/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json().catch(() => ({ success: false }));
-
-      if (!data.success) {
-        alert(data.message || "Failed to create chat.");
-        return;
-      }
-
-      setShowCreateChatModal(false);
-      setCreateChatForm({ title: "", projectId: "" });
-      setSelectedParticipantIds([]);
-      
-      if (data.chat?.id) {
-        setSelectedConversationId(data.chat.id);
-      }
-      
-      await loadData(currentUser.id);
-    } catch (error) {
-      console.error("CREATE CHAT ERROR:", error);
-      alert("Failed to create chat.");
-    } finally {
-      setCreatingChat(false);
+    if (data.chat?.id) {
+      setSelectedConversationId(data.chat.id);
+      setActiveSection("messages");
     }
+  } catch (error) {
+    console.error("CREATE CHAT ERROR:", error);
+    alert("Failed to create chat.");
+  } finally {
+    setCreatingChat(false);
   }
-
+}
   function toggleParticipant(id: number) {
-    setSelectedParticipantIds((prev) => (prev.includes(id) ? [] : [id]));
-  }
+  setSelectedParticipantIds((prev) =>
+    prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+  );
 
+}
   function handleEditUpload(item: UploadItem) {
     setActiveSection("uploads");
     setEditingUploadId(item.id);
@@ -2305,90 +2305,106 @@ export default function DesignerDashboardPage() {
       </div>
 
       {showCreateChatModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalCard}>
-            <div className={styles.modalHead}>
-              <h3>Start New Chat</h3>
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={() => setShowCreateChatModal(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
+       <div className={styles.modalOverlay}>
+  <div className={styles.modalCard}>
+    <div className={styles.modalHeader}>
+      <h3>Start New Chat</h3>
+      <button
+        type="button"
+        className={styles.closeModalBtn}
+        onClick={() => {
+          setShowCreateChatModal(false);
+          setCreateChatForm({ title: "", projectId: "" });
+          setSelectedParticipantIds([]);
+        }}
+      >
+        <X size={18} />
+      </button>
+    </div>
 
-            <div className={styles.modalBody}>
-              <div className={styles.panel}>
-                <div className={styles.panelHead}>
-                  <h3>Choose Person</h3>
+    <div className={styles.modalBody}>
+      <div className={styles.panel}>
+        <div className={styles.panelHead}>
+          <h3>Choose People</h3>
+        </div>
+
+        {participantsLoading ? (
+          <div className={styles.loading}>Loading people...</div>
+        ) : availableParticipants.length > 0 ? (
+          <div className={styles.cardList}>
+            {availableParticipants.map((participant) => (
+              <label
+                key={participant.id}
+                className={styles.infoCard}
+                style={{
+                  cursor: "pointer",
+                  border: selectedParticipantIds.includes(participant.id)
+                    ? "1px solid rgba(110, 168, 254, 0.8)"
+                    : undefined,
+                }}
+              >
+                <div>
+                  <h4>{participant.name}</h4>
+                  <p>{participant.email}</p>
+                  <span>{participant.role}</span>
                 </div>
 
-                {participantsLoading ? (
-                  <div className={styles.loading}>Loading people...</div>
-                ) : availableParticipants.length > 0 ? (
-                  <div className={styles.cardList}>
-                    {availableParticipants.map((participant) => (
-                      <label
-                        key={participant.id}
-                        className={styles.infoCard}
-                        style={{
-                          cursor: "pointer",
-                          border: selectedParticipantIds.includes(participant.id)
-                            ? "1px solid rgba(110, 168, 254, 0.8)"
-                            : undefined,
-                        }}
-                      >
-                        <div>
-                          <h4>{participant.name}</h4>
-                          <p>{participant.email}</p>
-                          <span>{participant.role}</span>
-                        </div>
-
-                        <input
-                          type="radio"
-                          name="chat-user"
-                          checked={selectedParticipantIds.includes(participant.id)}
-                          onChange={() => toggleParticipant(participant.id)}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.emptyState}>No participants available.</div>
-                )}
-              </div>
-
-              <select
-                value={createChatForm.projectId}
-                onChange={(e) =>
-                  setCreateChatForm({ ...createChatForm, projectId: e.target.value })
-                }
-              >
-                <option value="">Without project</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-
-              <div className={styles.formActions}>
-                <button type="button" onClick={handleCreateChat} disabled={creatingChat}>
-                  {creatingChat ? "Creating..." : "Start Chat"}
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.cancelBtn}
-                  onClick={() => setShowCreateChatModal(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+                <input
+                  type="checkbox"
+                  checked={selectedParticipantIds.includes(participant.id)}
+                  onChange={() => toggleParticipant(participant.id)}
+                />
+              </label>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className={styles.emptyState}>No participants available.</div>
+        )}
+      </div>
+
+      <input
+        type="text"
+        placeholder="Group name (optional for 2+ people)"
+        value={createChatForm.title}
+        onChange={(e) =>
+          setCreateChatForm((prev) => ({ ...prev, title: e.target.value }))
+        }
+      />
+
+      <select
+        value={createChatForm.projectId}
+        onChange={(e) =>
+          setCreateChatForm((prev) => ({ ...prev, projectId: e.target.value }))
+        }
+      >
+        <option value="">Without project</option>
+        {projects.map((project) => (
+          <option key={project.id} value={project.id}>
+            {project.name}
+          </option>
+        ))}
+      </select>
+
+      <div className={styles.formActions}>
+        <button type="button" onClick={handleCreateChat} disabled={creatingChat}>
+          {creatingChat ? "Creating..." : "Start Chat"}
+        </button>
+
+        <button
+          type="button"
+          className={styles.cancelBtn}
+          onClick={() => {
+            setShowCreateChatModal(false);
+            setCreateChatForm({ title: "", projectId: "" });
+            setSelectedParticipantIds([]);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
       )}
     </>
   );

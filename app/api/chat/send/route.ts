@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
 
-      const safeName = `${Date.now()}-${file.name.replace(/\\s+/g, "-")}`;
+      const safeName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
       const filePath = path.join(uploadDir, safeName);
 
       fs.writeFileSync(filePath, buffer);
@@ -90,20 +90,21 @@ export async function POST(request: Request) {
 
     await prisma.chat.update({
       where: { id: conversationId },
-      data: { updatedAt: new Date() }
+      data: { updatedAt: new Date() },
     });
 
     return NextResponse.json({
-      success: true, message: {
+      success: true,
+      message: {
         id: message.id,
         text: message.text,
         createdAt: message.createdAt,
         sender: {
           id: message.sender.id,
           name: message.sender.name,
-          role: message.sender.role
-        }
-      }
+          role: message.sender.role,
+        },
+      },
     });
   } catch (error) {
     console.error("SEND MESSAGE ERROR:", error);

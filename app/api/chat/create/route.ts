@@ -65,9 +65,7 @@ export async function POST(request: NextRequest) {
 
     const chat = await prisma.chat.create({
       data: {
-        title:
-          title ||
-          (isDirectChat ? "Direct Chat" : "Group Chat"),
+        title: title || (isDirectChat ? "Direct Chat" : "Group Chat"),
         projectId,
         participants: {
           create: uniqueParticipantIds.map((userId) => ({
