@@ -15,17 +15,32 @@ export async function GET(request: NextRequest) {
 
     const projects = await prisma.project.findMany({
       where: {
-        designerId,
+        designs: {
+          some: {
+            designerId: designerId,
+          },
+        },
       },
       include: {
+<<<<<<< HEAD
         client: true,
         uploads: true,
+=======
+        user: true,
+        uploads: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 5,
+        },
+>>>>>>> 1edc76ccac6c6e5592be0f6009150cf22483fc68
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
+<<<<<<< HEAD
     const formattedProjects = projects.map((project) => ({
       id: project.id,
       name: project.name,
@@ -43,12 +58,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       projects: formattedProjects,
+=======
+    return NextResponse.json({
+      success: true,
+      projects,
+>>>>>>> 1edc76ccac6c6e5592be0f6009150cf22483fc68
     });
   } catch (error) {
     console.error("DESIGNER PROJECTS ERROR:", error);
 
     return NextResponse.json(
-      { success: false, message: "Failed to load projects." },
+      { success: false, message: "Failed to load designer projects." },
       { status: 500 }
     );
   }

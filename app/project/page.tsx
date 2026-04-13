@@ -1,108 +1,109 @@
-import styles from "./projects.module.css";
+"use client";
 
-const projects = [
-  {
-    id: 1,
-    name: "Restaurant Branding",
-    client: "Taste House",
-    service: "Brand Identity",
-    status: "In Progress",
-    deadline: "Apr 10, 2026",
-  },
-  {
-    id: 2,
-    name: "Summer Campaign",
-    client: "Sun Mall",
-    service: "Social Media Ads",
-    status: "Pending Approval",
-    deadline: "Apr 15, 2026",
-  },
-  {
-    id: 3,
-    name: "Glow Beauty Launch",
-    client: "Glow Beauty",
-    service: "Content Design",
-    status: "Completed",
-    deadline: "Apr 02, 2026",
-  },
-  {
-    id: 4,
-    name: "Fitness Promo Video",
-    client: "Power Gym",
-    service: "Video Production",
-    status: "Reviewing",
-    deadline: "Apr 18, 2026",
-  },
-  {
-    id: 5,
-    name: "Eid Offer Campaign",
-    client: "Al Noor Store",
-    service: "Marketing Campaign",
-    status: "In Progress",
-    deadline: "Apr 20, 2026",
-  },
-  {
-    id: 6,
-    name: "Fashion Ads Package",
-    client: "Luna Fashion",
-    service: "Paid Ads Management",
-    status: "Pending",
-    deadline: "Apr 25, 2026",
-  },
-];
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./login.module.css";
 
-export default function ProjectsPage() {
+export default function LoginPage() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("client");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      if (data.role === "company") {
+        router.push("/company-home");
+      } else if (data.role === "designer") {
+        router.push("/designer-dashboard");
+      } else {
+        router.push("/client-dashboard");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className={styles.wrapper}>
-      <aside className={styles.sidebar}>
-        <h2 className={styles.logo}>NAKSHET ADS</h2>
+    <div className={styles.page}>
+      <div className={styles.overlay}>
+        <div className={styles.card}>
+          <h1 className={styles.title}>NAKSHET ADS</h1>
+          <p className={styles.subtitle}>Login to your account</p>
 
-        <ul className={styles.menu}>
-          <li>Dashboard</li>
-          <li className={styles.active}>Projects</li>
-          <li>Clients</li>
-          <li>Designs</li>
-          <li>Videos</li>
-          <li>Approvals</li>
-          <li>Reports</li>
-          <li>Messages</li>
-        </ul>
-      </aside>
-
-      <main className={styles.main}>
-        <header className={styles.topbar}>
-          <div>
-            <h1>Projects</h1>
-            <p>Manage and follow all project details in one place.</p>
-          </div>
-          <button className={styles.addBtn}>+ Add New Project</button>
-        </header>
-
-        <section className={styles.cardsGrid}>
-          {projects.map((project) => (
-            <div key={project.id} className={styles.projectCard}>
-              <div className={styles.cardTop}>
-                <h3>{project.name}</h3>
-                <span className={styles.status}>{project.status}</span>
-              </div>
-
-              <div className={styles.cardBody}>
-                <p>
-                  <strong>Client:</strong> {project.client}
-                </p>
-                <p>
-                  <strong>Service:</strong> {project.service}
-                </p>
-                <p>
-                  <strong>Deadline:</strong> {project.deadline}
-                </p>
-              </div>
-
-              <button className={styles.detailsBtn}>Show Details</button>
+          <form onSubmit={handleLogin} className={styles.form}>
+            <div className={styles.inputGroup}>
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-          ))}
-        </section>
-      </main>
+
+            <div className={styles.inputGroup}>
+              <label>Password</label>
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label>Role</label>
+              <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="client">Client</option>
+                <option value="designer">Designer</option>
+                <option value="company">Company</option>
+              </select>
+            </div>
+
+            {error && <p className={styles.error}>{error}</p>}
+
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          <p className={styles.footerText}>
+            Don&apos;t have an account?{" "}
+            <span onClick={() => router.push("/register")}>Register</span>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
