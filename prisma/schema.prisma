@@ -7,109 +7,156 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id              Int              @id @default(autoincrement())
-  name            String
-  email           String           @unique
-  passwordHash    String
-  role            String
-  createdAt       DateTime         @default(now())
-  clientProfile   ClientProfile?
-  projects        Project[]
-  files           ClientFile[]
-  reports         ClientReport[]
-  serviceRequests ServiceRequest[]
-  designs         ClientDesign[]
-  videos          ClientVideo[]
+enum UserRole {
+  designer
+  client
+  company
 }
 
-model ClientProfile {
-  id             Int    @id @default(autoincrement())
-  companyName    String
-  businessType   String
-  contactPerson  String
-  phone          String
-  location       String
-  packageName    String
-  contractStart  String
-  contractStatus String
-  website        String
-  socialMedia    String
-  userId         Int    @unique
-  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum ProjectStatus {
+  pending
+  in_progress
+  completed
+  waiting_approval
+}
+
+enum UploadCategory {
+  design
+  video
+  branding
+}
+
+enum UploadStatus {
+  pending_review
+  waiting_client_approval
+  approved
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  name             String
+  email            String            @unique
+  password         String
+  role             UserRole
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  designerProjects Project[]         @relation("DesignerProjects")
+  clientProjects   Project[]         @relation("ClientProjects")
+
+  uploads          Upload[]
+  sentMessages     Message[]         @relation("SentMessages")
+  participants     ChatParticipant[]
+  approvals        Approval[]
+  notifications    Notification[]
 }
 
 model Project {
-  id        Int      @id @default(autoincrement())
-  name      String
-  service   String
-  status    String
-  deadline  String
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id          Int           @id @default(autoincrement())
+  name        String
+  service     String
+  description String?
+  status      ProjectStatus @default(pending)
+  deadline    DateTime
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  designerId  Int
+  clientId    Int?
+
+  designer    User          @relation("DesignerProjects", fields: [designerId], references: [id])
+  client      User?         @relation("ClientProjects", fields: [clientId], references: [id])
+
+  uploads     Upload[]
+  chats       Chat[]
+  approvals   Approval[]
 }
 
-model ClientFile {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      String
-  size      String
-  status    String
-  date      String
-  filePath  String
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+model Upload {
+  id         Int      @id @default(autoincrement())
+  title      String
+  fileUrl    String
+  fileType   String
+  category   UploadCategory
+  status     UploadStatus
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  projectId  Int?
+  designerId Int
+
+  project    Project? @relation(fields: [projectId], references: [id])
+  designer   User     @relation(fields: [designerId], references: [id])
 }
 
-model ClientReport {
-  id        Int      @id @default(autoincrement())
-  title     String
-  period    String
-  metric    String
-  result    String
-  status    String
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+model Chat {
+  id           Int               @id @default(autoincrement())
+  title        String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  projectId    Int?
+
+  project      Project?          @relation(fields: [projectId], references: [id])
+  messages     Message[]
+  participants ChatParticipant[]
 }
 
-model ServiceRequest {
-  id                 Int      @id @default(autoincrement())
-  title              String
-  serviceType        String
-  description        String
-  preferredStartDate String
-  priority           String
-  status             String   @default("Pending")
-  userId             Int
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt          DateTime @default(now())
+model ChatParticipant {
+  id         Int      @id @default(autoincrement())
+  chatId     Int
+  userId     Int
+  createdAt  DateTime @default(now())
+
+  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
 }
 
-model ClientDesign {
-  id          Int      @id @default(autoincrement())
-  title       String
-  type        String
-  date        String
-  status      String
-  note        String
-  previewPath String?
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+model Message {
+  id         Int      @id @default(autoincrement())
+  text       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  chatId     Int
+  senderId   Int
+
+  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
 }
 
-model ClientVideo {
-  id          Int      @id @default(autoincrement())
-  title       String
-  type        String
-  date        String
-  status      String
-  note        String
-  videoPath   String?
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+model Approval {
+  id         Int             @id @default(autoincrement())
+  status     ApprovalStatus  @default(pending)
+  feedback   String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  uploadId   Int?
+  projectId  Int?
+  reviewerId Int
+
+  upload     Upload?         @relation(fields: [uploadId], references: [id])
+  project    Project?        @relation(fields: [projectId], references: [id])
+  reviewer   User            @relation(fields: [reviewerId], references: [id])
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  title      String
+  body       String?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  userId     Int
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

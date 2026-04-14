@@ -35,9 +35,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const member = await prisma.conversationMember.findFirst({
+    const member = await prisma.chatParticipant.findFirst({
       where: {
-        conversationId,
+        chatId: conversationId,
         userId: senderId,
       },
     });
@@ -49,9 +49,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let attachmentUrl: string | null = null;
-    let attachmentType: string | null = null;
-    let attachmentName: string | null = null;
+    let finalMessageText = text;
 
     if (file && file.size > 0) {
       const bytes = await file.arrayBuffer();
@@ -67,26 +65,47 @@ export async function POST(request: Request) {
 
       fs.writeFileSync(filePath, buffer);
 
-      attachmentUrl = `/chat-uploads/${safeName}`;
-      attachmentType = file.type || "application/octet-stream";
-      attachmentName = file.name;
+      const attachmentUrl = `/chat-uploads/${safeName}`;
+      const isVideo = file.type.startsWith("video");
+
+      const payload = {
+        mediaType: isVideo ? "video" : "image",
+        url: attachmentUrl,
+        caption: text,
+      };
+
+      finalMessageText = `__CHAT_MEDIA__${JSON.stringify(payload)}`;
     }
 
     const message = await prisma.message.create({
       data: {
-        conversationId,
+        chatId: conversationId,
         senderId,
-        text: text || null,
-        attachmentUrl,
-        attachmentType,
-        attachmentName,
+        text: finalMessageText || "",
       },
       include: {
         sender: true,
       },
     });
 
-    return NextResponse.json({ success: true, message });
+    await prisma.chat.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: {
+        id: message.id,
+        text: message.text,
+        createdAt: message.createdAt,
+        sender: {
+          id: message.sender.id,
+          name: message.sender.name,
+          role: message.sender.role,
+        },
+      },
+    });
   } catch (error) {
     console.error("SEND MESSAGE ERROR:", error);
     return NextResponse.json(

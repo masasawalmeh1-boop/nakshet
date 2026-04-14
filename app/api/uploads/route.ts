@@ -1,96 +1,59 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import fs from "fs";
-import path from "path";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const designerId = Number(searchParams.get("designerId"));
 
-    const uploads = await prisma.upload.findMany({
-      where: designerId
-        ? {
-            uploaderId: designerId,
-          }
-        : undefined,
+    if (!designerId) {
+      return NextResponse.json(
+        { success: false, message: "Designer ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const projects = await prisma.project.findMany({
+      where: {
+        designerId,
+      },
       include: {
-        project: true,
-        uploader: true,
+        client: true,
+        uploads: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 5,
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return NextResponse.json({ success: true, uploads });
-  } catch (error) {
-    console.error("GET UPLOADS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to load uploads." },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const formData = await request.formData();
-
-    const title = String(formData.get("title") || "");
-    const category = String(formData.get("category") || "design");
-    const status = String(formData.get("status") || "Pending Review");
-    const note = String(formData.get("note") || "");
-    const uploaderId = Number(formData.get("uploaderId"));
-    const projectIdValue = formData.get("projectId");
-    const file = formData.get("file") as File | null;
-
-    const projectId = projectIdValue ? Number(projectIdValue) : null;
-
-    if (!title || !uploaderId || !file) {
-      return NextResponse.json(
-        { success: false, message: "title, uploaderId and file are required." },
-        { status: 400 }
-      );
-    }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    const safeName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-    const filePath = path.join(uploadDir, safeName);
-
-    fs.writeFileSync(filePath, buffer);
-
-    const savedUpload = await prisma.upload.create({
-      data: {
-        title,
-        fileName: safeName,
-        fileUrl: `/uploads/${safeName}`,
-        fileType: file.type || "application/octet-stream",
-        category,
-        status,
-        note,
-        uploaderId,
-        projectId,
+    const formattedProjects = projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      service: project.service,
+      status: project.status,
+      deadline: project.deadline,
+      owner: {
+        id: project.client?.id || 0,
+        name: project.client?.name || "No Client",
+        email: project.client?.email || "no-client@nakshet.com",
       },
-      include: {
-        project: true,
-        uploader: true,
-      },
+      uploads: project.uploads,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      projects: formattedProjects,
     });
-
-    return NextResponse.json({ success: true, upload: savedUpload });
   } catch (error) {
-    console.error("UPLOAD ERROR:", error);
+    console.error("DESIGNER PROJECTS ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to upload file." },
+      { success: false, message: "Failed to load designer projects." },
       { status: 500 }
     );
   }

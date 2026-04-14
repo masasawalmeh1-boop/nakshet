@@ -4,8 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email, password } = body;
+    const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -25,47 +24,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-    if (!isValidPassword) {
+    if (!isPasswordCorrect) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password." },
         { status: 401 }
       );
     }
 
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-
-    response.cookies.set("auth_user", user.email, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24,
-    });
-
-    response.cookies.set("auth_role", user.role, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24,
-    });
-
-    return response;
+  return NextResponse.json({
+  success: true,
+  user: {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+});
   } catch (error) {
     console.error("LOGIN ERROR:", error);
 
     return NextResponse.json(
-      { success: false, message: "Server error." },
+      { success: false, message: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

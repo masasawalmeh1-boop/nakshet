@@ -1,79 +1,50 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const projectId = Number(searchParams.get("projectId"));
+    const userId = Number(searchParams.get("userId"));
 
-    if (!projectId) {
+    if (!userId) {
       return NextResponse.json(
-        { success: false, message: "projectId is required." },
+        {
+          success: false,
+          message: "User ID is required.",
+        },
         { status: 400 }
       );
     }
 
-    const project = await prisma.project.findUnique({
+    const users = await prisma.user.findMany({
       where: {
-        id: projectId,
-      },
-      include: {
-        owner: true,
-        designer: true,
-      },
-    });
-
-    if (!project) {
-      return NextResponse.json(
-        { success: false, message: "Project not found." },
-        { status: 404 }
-      );
-    }
-
-    const clients = await prisma.user.findMany({
-      where: {
-        role: "client",
+        id: {
+          not: userId,
+        },
       },
       orderBy: {
         name: "asc",
       },
-    });
-
-    const usersMap = new Map<number, { id: number; name: string; email: string; role: string }>();
-
-    usersMap.set(project.owner.id, {
-      id: project.owner.id,
-      name: project.owner.name,
-      email: project.owner.email,
-      role: project.owner.role,
-    });
-
-    if (project.designer) {
-      usersMap.set(project.designer.id, {
-        id: project.designer.id,
-        name: project.designer.name,
-        email: project.designer.email,
-        role: project.designer.role,
-      });
-    }
-
-    clients.forEach((client) => {
-      usersMap.set(client.id, {
-        id: client.id,
-        name: client.name,
-        email: client.email,
-        role: client.role,
-      });
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      participants: Array.from(usersMap.values()),
+      participants: users,
     });
   } catch (error) {
-    console.error("GET CHAT PARTICIPANTS ERROR:", error);
+    console.error("LOAD PARTICIPANTS ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to load participants." },
+      {
+        success: false,
+        message: "Failed to load participants.",
+      },
       { status: 500 }
     );
   }

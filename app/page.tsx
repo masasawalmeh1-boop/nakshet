@@ -1,59 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!email || !password) {
-      setErrorMessage("Please enter your email and password.");
+    if (!email.trim() || !password.trim()) {
+      setErrorMessage("Please enter email and password.");
       return;
     }
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+    localStorage.setItem(
+      "loggedInUser",
+      JSON.stringify({
+        id: 2,
+        name: "Sara Designer",
+        email: email.trim().toLowerCase(),
+        role: "designer",
+      })
+    );
 
-      const data = await res.json();
+    setSuccessMessage("Login successful. Redirecting...");
 
-      if (!data.success) {
-        setErrorMessage(data.message || "Login failed.");
-        return;
-      }
-
-      setSuccessMessage("Login successful. Redirecting...");
-
-      setTimeout(() => {
-        if (data.role === "company") {
-          router.push("/company-home");
-        } else if (data.role === "designer") {
-          router.push("/designer-dashboard");
-        } else {
-          router.push("/client-dashboard");
-        }
-      }, 1000);
-    } catch (error) {
-      setErrorMessage("Something went wrong. Please try again.");
-    }
+    setTimeout(() => {
+      router.push("/designer-dashboard");
+    }, 500);
   };
 
   return (
