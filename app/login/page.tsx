@@ -50,13 +50,13 @@ export default function LoginPage() {
       );
 
       if (data.user.role === "company") {
-        router.push("/company-home");
+        router.push("/company-dashboard");
       } else if (data.user.role === "designer") {
         router.push("/designer-dashboard");
       } else {
         router.push("/client-dashboard");
       }
-    } catch (err) {
+    } catch (error) {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
